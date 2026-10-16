@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(scripts/*)",
+      "Bash(./scripts/*)",
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git rm *)",
+      "Bash(git commit *)",
+      "Bash(git rebase *)",
+      "Bash(git merge *)",
+      "Bash(git worktree *)",
+      "Bash(git branch *)",
+      "Bash(git fetch *)",
+      "Bash(git -C *)",
+      "Bash(git push)",
+      "Bash(git push *)",
+      "Edit(./**)"
+    ],
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git push --force-with-lease *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean *)",
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(./**/.env)",
+      "Read(./**/.env.*)"
+    ],
+    "ask": [
+      "Edit(./.claude/settings.json)"
+    ]
+  }
+}
