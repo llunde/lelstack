@@ -12,6 +12,7 @@ Read-only: lists findings, changes no code. Never pass a fix flag to a review to
 - **context:** the plan and its note (optional for ad hoc reviews)
 - **level:** `light` or `full` (workflow/commands/plan.md)
 - **out:** where to write the merged table (a `## Review` section or an audit section file)
+- **focus** (deep pass only): the reason the first pass was escalated. Review those parts in depth. Keep the first pass's rows (change a severity or status only with a reason), append new rows, and replace its verdict.
 
 A review that dies is simply run again. Only the merged result is written.
 
@@ -56,7 +57,8 @@ Write to **out**:
 
 - Lens: `correctness` | `quality` | `lean` | `plan`. Fix: the smallest fix that works, preferring fixes that delete code. Status starts as `open`.
 - After the table: `Verdict: ship` or `Verdict: fix #…`, `Lean: -<N> lines possible` if any, and `Not checked:` for anything that mattered but couldn't be checked.
-- Return ≤5 lines: counts by severity and the verdict.
+- Then `Deep review: no` or `Deep review: yes — <reason>`. Say yes only when part of the target needs more depth than this pass gave it: a critical or high finding you couldn't confirm, or security, auth, data-integrity or concurrency logic you couldn't fully judge. A confirmed finding needs a fix, not a deep review. A deep pass writes `Deep review: done`.
+- Return ≤5 lines: counts by severity, the verdict and the `Deep review:` line.
 
 ## Fallback bug hunt (correctness lens without a built-in review)
 Read-only. Goal: find what breaks, not restate what the code does. `light`: hunks with logic only. `full`: every hunk.

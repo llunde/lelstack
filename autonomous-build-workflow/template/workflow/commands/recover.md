@@ -9,7 +9,8 @@ Role: Orchestrator. Run at the start of every `build` session and after any cont
    - tasks not all ticked (read from the plan file for `sequential`, from the `## Tasks` in the progress or slice notes otherwise) → compare the ticked tasks with the diff, untick what doesn't hold, note the discrepancy in the progress note, and dispatch a fresh Executor for the rest;
    - all tasks ticked, `check` not yet passing → Verify (build.md §2 step 4);
    - `## Review` empty and `review:` isn't `skip` → Review (build.md §2 step 5);
-   - critical or high findings with Status exactly `open` → the fix round (build.md §2 step 5), one step up;
+   - `## Review` ends with `Deep review: yes` and no deep pass ran → the deep pass (build.md §2 step 5);
+   - critical or high findings with Status exactly `open` → the fix round (build.md §2 step 5), one rung up;
    - otherwise → Close (build.md §2 step 6).
 3. **In-flight units.** Compare the "In flight" table with `git worktree list` and local unit branches. For each unit:
    - a worktree with a rebase in progress → `git rebase --abort`, then integrate from integrate.md step 1;

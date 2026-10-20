@@ -116,21 +116,21 @@ Long-running agent work tends to fail in predictable ways: context filled up, wo
 | Role | Does | Model (Claude Code default) |
 |---|---|---|
 | **Orchestrator** | Picks work, dispatches agents, verifies, integrates, commits, pushes | your session's model |
-| **Planner** | Writes one self-contained plan brief | Opus, high effort |
-| **Executor** | Implements one plan or slice | Sonnet, medium; Opus for risky work; Haiku for mechanical work |
-| **Reviewer** | Reviews a plan's changes, never its own code | Sonnet or Opus, by review level |
+| **Planner** | Writes one self-contained plan brief | Opus, high effort; Sonnet for small or pattern-following plans |
+| **Executor** | Implements one plan or slice | Sonnet, medium; Haiku for mechanical work; Opus only with a reason |
+| **Reviewer** | Checks a plan brief for blockers; reviews a plan's changes, never its own code | Sonnet, medium; Opus for high-risk plans and deep passes |
 | **Resolver** | Resolves merge conflicts between parallel work | Opus, high |
 | **Helper** | Reads long logs or many files and returns a short summary | Haiku, low |
 
-The Orchestrator picks the model and effort for each task, and goes one step up when a retry is needed.
+The Orchestrator picks the model and effort for each task. It starts at the cheapest setting that fits, goes higher only with a stated reason, and climbs one rung of a fixed ladder when a retry is needed.
 
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"fontFamily": "-apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "15px", "primaryColor": "#EEF2FF", "primaryBorderColor": "#6366F1", "primaryTextColor": "#1E1B4B", "lineColor": "#7C8DA6", "clusterBkg": "#F8FAFC", "clusterBorder": "#CBD5E1", "edgeLabelBackground": "#FFFFFF", "tertiaryColor": "#F8FAFC"}}}%%
 flowchart LR
     O(("🎯<br/>Orchestrator"))
     PL["📝 Planner<br/><small>strong · high</small>"]
-    EX["🛠 Executor<br/><small>standard · medium<br/>strong when risky · fast when mechanical</small>"]
-    RV["🔍 Reviewer<br/><small>by review level</small>"]
+    EX["🛠 Executor<br/><small>standard · medium<br/>strong with a reason · fast when mechanical</small>"]
+    RV["🔍 Reviewer<br/><small>standard · medium<br/>strong for full review or deep pass</small>"]
     RS["🔀 Resolver<br/><small>strong · high</small>"]
     HP["📋 Helper<br/><small>fast · low</small>"]
     FS[("workflow/<br/><small>files in git</small>")]
@@ -165,16 +165,16 @@ Workers write their results to files; the Orchestrator reads only short returns 
 For each phase of the project, the Orchestrator repeats:
 
 1. **Pick** the next plan (or several independent plans to run in parallel).
-2. **Plan:** a Planner writes the brief: goal, tasks, which files it may touch, tests, review level.
+2. **Plan:** a Planner writes the brief: goal, tasks, which files it may touch, tests, review level. A cheap Reviewer checks it for blocking problems only.
 3. **Execute:** one Executor, or several in parallel, each in its own git worktree when the work splits cleanly.
 4. **Verify:** run the project's `check` script and the definition of done.
-5. **Review:** a fresh Reviewer runs a combined review: Claude Code's code review plus `ponytail-review`, checked against the plan. Critical and high findings get one fix round.
+5. **Review:** a fresh Reviewer runs a combined review: Claude Code's code review plus `ponytail-review`, checked against the plan. A deeper pass on a stronger model runs only when the first pass asks for one or the change is risky. Critical and high findings get one fix round.
 6. **Close:** commit, update the indexes, push.
 
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"fontFamily": "-apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "15px", "primaryColor": "#EEF2FF", "primaryBorderColor": "#6366F1", "primaryTextColor": "#1E1B4B", "lineColor": "#7C8DA6", "clusterBkg": "#F8FAFC", "clusterBorder": "#CBD5E1", "edgeLabelBackground": "#FFFFFF", "tertiaryColor": "#F8FAFC"}}}%%
 flowchart TD
-    P(["Pick next plan(s)"]) --> PL["📝 Planner writes the brief<br/><small>tasks · owned files · tests · review level · model</small>"]
+    P(["Pick next plan(s)"]) --> PL["📝 Planner writes the brief<br/><small>tasks · owned files · tests · review level · model<br/>then a light brief check</small>"]
     PL --> X{{"Execution mode"}}
     subgraph EXEC["Execute"]
         direction LR
@@ -186,8 +186,8 @@ flowchart TD
     PW --> INT["🔀 Integrate each unit<br/><small>rebase · resolve · check · review · squash-merge</small>"]
     S & PS --> V
     INT --> V["✔ Verify<br/><small>check · definition of done</small>"]
-    V --> R["🔍 Review<br/><small>code-review + ponytail-review + plan check</small>"]
-    R -->|critical / high| FX["Fix round<br/><small>one model step up</small>"]
+    V --> R["🔍 Review<br/><small>code-review + ponytail-review + plan check<br/>deep pass only on escalation</small>"]
+    R -->|critical / high| FX["Fix round<br/><small>one rung up</small>"]
     FX --> R
     R -->|medium / low| PA["Parked for the phase audit"]
     R -->|clean| CL(["📦 Close<br/><small>commit · update indexes · push</small>"])
@@ -369,7 +369,7 @@ gitGraph
 
 ### Costs and limits
 
-- Cheap models do cheap work (Haiku for log triage and mechanical edits), and expensive ones do risky work.
+- Every dispatch starts at the cheapest model and effort that fits (Haiku for log triage and mechanical edits, Sonnet for most building and reviewing). Going higher needs a stated reason, which lands in the progress note, and each audit's retro counts the model mix so you can tune the starting points.
 - Scripts are quiet: a passing `check` prints one line, not a full test log.
 - The Orchestrator keeps its own context small and, after a context compaction, re-reads the state from disk instead of trusting its memory.
 - **Automatic resume** (off by default): a shell loop or scheduled task can restart `/build` after each usage reset. Turn it on in `workflow/harness.md` once a few supervised runs look right. It spends quota while you're away.

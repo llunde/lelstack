@@ -17,10 +17,11 @@ Role: Orchestrator for Reviewers. Load the `caveman` skill. Source code is read-
    - All low findings in one sweep plan.
    - Governance findings in one docs plan.
    Number them after the last plan, with `source: audit <date> F<n>`. Product ambiguities become questions with defaults. Fix index and link bookkeeping directly. Fill in the report's "Plans spawned".
-6. **Retro.** Start Helpers to gather the numbers (fix rounds, escalations, repeats, overturned defaults), then judge them yourself. Read only what's on disk for this scope: progress notes and their Review sections, this report, Resolver runs and re-dispatches, questions resolved since the last audit. Append observations to workflow/retro.md:
+6. **Retro.** Start Helpers to gather the numbers (fix rounds, escalations, model mix, repeats, overturned defaults), then judge them yourself. Read only what's on disk for this scope: progress notes and their Review sections, this report, Resolver runs and re-dispatches, questions resolved since the last audit. Append observations to workflow/retro.md:
    - **escape:** a critical or high finding in this audit that its plan's review missed (name the plan, its review level, the Executor's and Reviewer's tier/effort, and the finding).
    - **repeat:** the same kind of finding, deviation or question in 3 or more plans.
    - **friction:** escalations (which tier/effort failed, which one fixed it), a plan that needed more than one fix round, merge conflicts or contradictions, plans well over budget.
+   - **model mix:** one line per audit: dispatches by role and tier/effort (from progress notes' `Model:` lines), how many started above the build.md §1 starting point or escalated, deep passes, brief checks that found a blocking problem, and any escape on work that stayed at standard tier.
    - **default-overturned:** a question where the human chose something other than the default in use.
    - **skill:** a multi-step procedure done by hand 3 or more times, or a recurring finding type a skill could prevent. Propose the skill's name, what it would do, and the evidence. Never create or install one.
    Then propose:
