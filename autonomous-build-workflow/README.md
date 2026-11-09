@@ -165,7 +165,7 @@ Workers write their results to files; the Orchestrator reads only short returns 
 For each phase of the project, the Orchestrator repeats:
 
 1. **Pick** the next plan (or several independent plans to run in parallel).
-2. **Plan:** a Planner writes the brief: goal, tasks, which files it may touch, tests, review level. A cheap Reviewer checks it for blocking problems only.
+2. **Plan:** a Planner writes the brief: goal, tasks, which files it may touch, tests, review level. A cheap Reviewer checks it for blocking problems only. Docs-only, config-only and text-only work takes a fast path: the Executor writes a short plan itself, with no Planner, brief check or review.
 3. **Execute:** one Executor, or several in parallel, each in its own git worktree when the work splits cleanly.
 4. **Verify:** run the project's `check` script and the definition of done.
 5. **Review:** a fresh Reviewer runs a combined review: the harness's built-in code review plus `ponytail-review`, checked against the plan. A deeper pass on a stronger model runs only when the first pass asks for one or the change is risky. Critical and high findings, and medium ones inside the plan's own files, get one fix round. Lows go to the phase audit, and nits without a concrete failure aren't tracked.

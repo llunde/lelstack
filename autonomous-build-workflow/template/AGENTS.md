@@ -32,7 +32,7 @@ The operating contract for building <project>. Read it in full at the start of e
 |---|---|---|---|
 | Orchestrator | the session's model (harness.md) | picks next work, dispatches, light-verifies, integrates units, assigns IDs, keeps indexes, commits, pushes | reads docs/code broadly, implements (exception: bookkeeping, and one-line fixes with no logic) |
 | Planner | strong / medium; standard / medium for small or pattern-following plans | writes one self-contained plan brief, proposes questions and decisions | writes code, assigns IDs |
-| Executor | standard / medium | implements one plan or slice in its owned paths, writes only the tests the plan lists, ticks tasks, writes its note | commits to the integration branch, edits outside owned paths, assigns IDs |
+| Executor | standard / medium | implements one plan or slice in its owned paths, writes only the tests the plan lists, ticks tasks, writes its note; on the fast path (build.md §2 step 2) also writes the short plan | commits to the integration branch, edits outside owned paths, assigns IDs |
 | Resolver | strong / medium | resolves a merge conflict between two units, keeping both intents | guesses when the intents contradict |
 | Helper | fast / low | failure triage; read-only gathering; returns facts and evidence (≤10 lines) | edits anything, decides, fixes |
 | Reviewer | standard / medium; strong / medium for `full` plans; strong / high for deep passes | checks a plan brief for blocking problems; runs the `workflow-review` skill on a plan's diff or an audit section; records findings | edits source; fixes findings; reviews code it wrote |
