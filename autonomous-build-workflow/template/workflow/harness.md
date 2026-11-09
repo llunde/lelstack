@@ -5,12 +5,14 @@ Agent-platform specifics; the rest of the workflow is harness-neutral. Every age
 ## Shared settings
 | Setting | Value |
 |---|---|
-| Max parallel workers | 3 |
+| Max parallel workers | writing units: 3 · read-only agents (reviews, audit sections, Helpers): 3. Lower the first when units share a single resource (one app, one database) |
+| Orchestrator | strong / medium: the session's tier and effort, set through this harness's command binding or session settings |
 | Usage model | <e.g. subscription, token-bound: prefer standard tier for bulk work> |
 | Automatic resume | off · on (WORKFLOW.md §7) |
-| Orchestrator session budget | <after each phase audit, or after 6 closed plans; applies only when automatic resume is on> |
+| Orchestrator session budget | <after each phase audit, or after 6 closed plans (build.md, Session budget)> |
 | Tier-2 tools enabled | none |
 | Skills / plugins (guidance only) | <name → role / phase that uses it> |
+| Required integrations | <none · per tool integration a phase can't work without (e.g. an MCP server): name → phases and roles; how to confirm its tools are reachable; recovery steps if not (recover.md step 0, build.md §4)> |
 
 ## <Harness, e.g. Claude Code>
 Added YYYY-MM-DD by <bootstrap | harness>.
@@ -21,10 +23,11 @@ Added YYYY-MM-DD by <bootstrap | harness>.
 | Command invocation | <e.g. `/build`; or the prompt "Follow workflow/commands/build.md"> |
 | Sub-agents | <yes (nesting: n levels) · no → single-agent mode> |
 | Tiers strong / standard / fast | <e.g. Claude Code: opus / sonnet / haiku · Codex: sol / terra / luna> |
-| Effort per dispatch | <yes: levels … · no: harness default> |
+| Effort per dispatch | <yes: workflow `low` / `medium` / `high` → this harness's levels … · no: harness default> |
 | Worktrees | <harness-native (e.g. Claude Code Agent tool isolation) · Orchestrator-created: `git worktree add <location>/<unit> -b wt/<unit> <integration branch>`> |
 | Worktree location | <e.g. `.claude/worktrees/` or `../<repo>.worktrees/`; sub-agents must be able to edit there without permission prompts. If inside the repo: gitignored and excluded from test discovery, lint, search and file watchers> |
 | Review: correctness lens | <built-in review an agent can start read-only on a range or paths, e.g. Claude Code `/code-review <effort> <target>` (never `--fix`) · or `fallback` (workflow-review SKILL.md, Fallback bug hunt)> |
+| Context reset | <how the Orchestrator compacts or clears its own context · none> |
 | Permissions | <baseline applied (WORKFLOW.md §6): where, e.g. `.claude/settings.json`; confirmed with one allowed and one denied command> |
 
 | Skill | Status | SKILL.md path |

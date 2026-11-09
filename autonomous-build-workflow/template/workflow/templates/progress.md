@@ -8,11 +8,13 @@ created: YYYY-MM-DD
 
 Plan: [NNN](../plans/NNN-slug.md)
 
+<!-- Leave out any section below Review that has nothing in it. -->
+
 ## Built
 <what was built, terse (AGENTS.md §6 Voice); a reviewer new to the code can follow it>
 
 ## Verification
-- Model: <tier/effort, plus any escalation and why>
+- Model: <tier/effort of every dispatch for this plan by role (P, B, E, R), plus any escalation and why; the Orchestrator completes it at close>
 - check: pass (<n> tests) | static-only
 - Tier 2: <what was observed, and how>
 - Tier 3: <acceptance items proposed (new-A…) | none>
@@ -24,13 +26,10 @@ Plan: [NNN](../plans/NNN-slug.md)
 
 | # | Severity | Lens | Location | Finding and concrete case | Fix | Status |
 |---|---|---|---|---|---|---|
-<Status: open | fixed | open → phase audit | open → plan MMM | → audit YYYY-MM-DD F<n>. "Open" means exactly `open`.>
+<Status: open | fixed (<file:line or commit>) | open → phase audit | open → plan MMM | accepted: <reason>. "Open" means exactly `open`.>
 
 ## Decisions and deviations
 <D-NNN added; any deviation from the plan, and why>
-
-## Notable files
-<path — what changed (the full list is in git)>
 
 ## Follow-ups
 <deferred items and where they went>

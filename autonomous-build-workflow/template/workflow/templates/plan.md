@@ -8,7 +8,7 @@ mode: delegated        # delegated | interactive
 execution: sequential  # sequential | parallel-shared | parallel-worktree
 review: light          # full | light | skip (workflow/commands/plan.md)
 ponytail: full         # full | lite (AGENTS.md §6; never ultra)
-model: standard/medium # Executor tier/effort proposal (build.md §1 routing)
+model: standard/medium # Executor tier/effort proposal; higher only with a reason (build.md §1)
 depends_on: []         # plan IDs that must be done first
 owns: []               # paths/globs this plan may edit (union of its slices)
 source: <workflow/docs/NN §x | Q-NNN | audit YYYY-MM-DD F<n> | A-NNN | change YYYY-MM-DD | drift YYYY-MM-DD | plan NNN review #n | plan NNN (partial close)>
@@ -43,7 +43,7 @@ completed:
 <execution: one line on why. Parallel only if the slices own disjoint paths and the work is big enough to pay for coordinating it.>
 <review: full | light | skip — one line on why (workflow/commands/plan.md).>
 <ponytail: full, or lite with one line on why.>
-<model: tier/effort from the routing table (build.md §1), one line on why.>
+<model: Executor tier/effort, the build.md §1 starting point unless a concrete reason from that table; one line on why.>
 
 ## Tasks
 - [ ] 1. <task> → verify: <how> (tier 1/2/3)

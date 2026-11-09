@@ -118,7 +118,7 @@ The bootstrap agent loads the `caveman` skill once the preflight passes (AGENTS.
 4. Choose the stack if the description doesn't fix it. Prefer what the human knows and what the agent's environment can verify. Record it as D-001 with the alternatives considered.
    - **Probe** the environment (which tools exist, which versions) rather than assuming, then write `workflow/stack.md`, including the E2E, Git and Concurrency sections (the outermost headless layer and smoke flows, integration branch, remote, conflict hotspots for this stack, worktree setup).
    - If `check` can't run here at all, declare **static-only mode** in stack.md. The human must accept it explicitly at sign-off.
-   - Choose skills or plugins and record them in harness.md. List any tier-2 tools in stack.md and enable them in harness.md.
+   - Choose skills or plugins and record them in harness.md, including any required integration a phase can't work without (how to confirm it, and recovery steps if it's missing). List any tier-2 tools in stack.md and enable them in harness.md.
 5. Fill in AGENTS.md §1, §4 and §6.
 6. Seed `workflow/plans/index.md` with one row per phase and row `001 Walking skeleton`. Other plans can be listed by title now. Their briefs are written just in time.
 7. **Sign-off gate.** Show the human a summary of one page or less: phases, stack and why, constraints, environment capabilities (and static-only mode if it applies), and open questions with their defaults. Apply corrections. When approved, commit `docs: project definition (bootstrap)`, then run `build`.
@@ -175,7 +175,7 @@ Bindings are the only workflow files besides `AGENTS.md` that live outside `work
   ---
   Follow `workflow/commands/<name>.md` exactly. Arguments: $ARGUMENTS
   ```
-- Tiers: strong = `opus`, standard = `sonnet`, fast = `haiku` (aliases; don't use `fable`). Pass `model` and `effort` on every Agent call (per-call effort needs Claude Code v2.1.292 or later; leave `CLAUDE_CODE_EFFORT_LEVEL` unset, since it overrides per-call effort). Sub-agents go through the Agent tool. They can nest (by default up to three levels) and can run skills, which the review needs: a Reviewer sub-agent runs `/code-review` and `ponytail-review` itself. All other dispatching stays with the Orchestrator. For `parallel-worktree`, use the Agent tool's worktree isolation and record the worktree path and branch it reports in "In flight". Add `.claude/worktrees/` to `.gitignore` and exclude it from test discovery, lint and search. Skills and plugins go in `.claude/settings.json`.
+- Tiers: strong = `opus`, standard = `sonnet`, fast = `haiku` (aliases; don't use `fable`). Pass `model` and `effort` on every Agent call (per-call effort needs Claude Code v2.1.292 or later; leave `CLAUDE_CODE_EFFORT_LEVEL` unset, since it overrides per-call effort). Sub-agents go through the Agent tool. They can nest (by default up to three levels) and can run skills, which the review needs: a Reviewer sub-agent runs `/code-review` and `ponytail-review` itself. All other dispatching stays with the Orchestrator. For `parallel-worktree`, use the Agent tool's worktree isolation and record the worktree path and branch it reports in "In flight". Add `.claude/worktrees/` to `.gitignore` and exclude it from test discovery, lint and search. Skills and plugins go in `.claude/settings.json`. The Orchestrator's strong / medium is the commands' `model: opus` plus `"effortLevel": "medium"` in `.claude/settings.json`.
 
 **Permissions baseline** (every harness). An autonomous run should neither stall on permission prompts nor run with everything allowed. The `harness` command writes this baseline into the harness's own permission config and records where in its section of harness.md:
 - **Allow** without prompting: the repo's `scripts/`; git inside the repo and its worktrees (status, diff, log, add, commit, rebase, merge, worktree, branch, fetch); reading and editing files in the repo and the worktree location; pushing the integration branch.
@@ -187,6 +187,7 @@ Bindings are the only workflow files besides `AGENTS.md` that live outside `work
 Claude Code: `.claude/settings.json` (committed; the copy is `bindings/claude-code/.claude/settings.json`):
 ```json
 {
+  "effortLevel": "medium",
   "permissions": {
     "allow": ["Bash(scripts/*)", "Bash(./scripts/*)", "Bash(git status)", "Bash(git status *)", "Bash(git diff *)",
               "Bash(git log *)", "Bash(git add *)", "Bash(git rm *)", "Bash(git commit *)", "Bash(git rebase *)",
@@ -205,13 +206,13 @@ Deny rules win over allow rules, so a force push stays blocked. Editing the perm
 - Invoke a command with the prompt "Follow workflow/commands/<name>.md.", or the harness's own custom-command mechanism if it has one (record which in its section). Codex reads AGENTS.md natively. If the harness has sub-agents, map the tiers to them. Otherwise use single-agent mode. Without native worktree isolation, the Orchestrator creates worktrees itself (harness.md); check that the harness lets sub-agents work in that location without permission prompts.
 
 **Single-agent mode** (no sub-agents, small context windows, local models)
-- `build` handles **one plan per session**, always `sequential`: run recover.md, write the plan, implement it, verify, commit, then exit. The single agent is also the Orchestrator, so it writes real IDs directly instead of proposed entries. It keeps `caveman` on throughout, loads `ponytail` while planning and implementing, and turns `ponytail` off for the review pass. If the harness can clear context between writing and implementing the plan, do so. Disk carries everything over. Do the plan review after clearing context if possible; otherwise do it as a separate pass, following the Reviewer brief strictly.
+- `build` handles **one plan per session**, always `sequential`: run recover.md, write the plan (no brief check), implement it, verify, commit, then exit. The single agent is also the Orchestrator, so it writes real IDs directly instead of proposed entries. It keeps `caveman` on throughout, loads `ponytail` while planning and implementing, and turns `ponytail` off for the review pass. If the harness can clear context between writing and implementing the plan, do so. Disk carries everything over. Do the plan review after clearing context if possible; otherwise do it as a separate pass, following the Reviewer brief strictly.
 - Restarting the agent after each session can be automated (§7, Automatic resume).
 - With small models, keep plans to about 5 tasks and give the strong tier to the best model available.
 
 ## 7. Optional add-ons
 
-- **Automatic resume** (off by default). `build` is safe to re-run at any point (`workflow/commands/recover.md`), so a shell loop or a scheduled task can start it again after a usage reset, until it reports a stop condition other than "usage running low" or "session budget reached". Set it to `on` in harness.md; that also enables the Orchestrator's session budget. Leave it off until a few supervised runs look right: it spends quota unattended.
+- **Automatic resume** (off by default). `build` is safe to re-run at any point (`workflow/commands/recover.md`), so a shell loop or a scheduled task can start it again after a usage reset, until it reports a stop condition other than "usage running low" or "session budget reached". Set it to `on` in harness.md; the Orchestrator's session budget then ends the session instead of compacting it. Leave it off until a few supervised runs look right: it spends quota unattended.
 - **Obsidian.** For a readable graph and a status view. Bootstrap sets it up when the human uses Obsidian (§3 Stage A step 6).
   - **Vault:** open `workflow/` as the vault, so it contains only workflow files. `workflow/.obsidian/` is gitignored: it's viewer preference, and Obsidian rewrites it constantly.
   - **Config** (written by bootstrap; if Obsidian ignores it, set the same by hand in Settings): links in Markdown format with relative paths; excluded files `templates/`, `commands/`, `skills/`, `WORKFLOW.md`; graph colour groups by folder for `docs/`, `plans/`, `progress/`, `decisions/`, `questions/`, `audits/`.
