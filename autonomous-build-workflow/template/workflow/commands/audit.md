@@ -5,7 +5,7 @@ Role: Orchestrator for Reviewers. Load the `caveman` skill. Source code is read-
 1. **Setup.** Create the folder. Record HEAD as `audited_through`. The scope is everything since the previous audit's `audited_through`, plus the phase's plans and any adopted commits. Run `check-full` and record the result as the gate (failure triage by a Helper if it fails). Collect every `open → phase audit` row from the `## Review` sections of every progress note whose plan closed in scope. Don't re-review or copy them: the report lists them by reference (`plan NNN #n`) with counts, and step 5 plans them.
 2. **Sections.** Split the scope into non-overlapping sections (by module or layer). Dispatch Reviewers in parallel (within the read-only cap in harness.md). Each Reviewer runs the `workflow-review` skill with the section's paths as the target, level `full` for sections holding a high-risk area from the overview and `light` otherwise, and out `section-<name>.md`. It adds a "Read fully / not read" list, and returns ≤5 lines. The skill's lenses cover correctness, safety, scale, tests, speed and lean code; the cross-cutting pass below covers what spans sections.
 3. **Cross-cutting pass** (you, or one Reviewer at strong / medium), written to `section-cross-cutting.md`:
-   - constraints that span modules
+   - constraints that span modules, checked against what actually runs, not only the reviewed code and output: the app's background jobs and default outbound calls, and the build's own tools
    - duplication across sections
    - earlier remediations still holding
    - tests that don't meet AGENTS.md §9 (no flow, not critical, not a regression), or duplicate each other: deletion candidates, grouped in one plan

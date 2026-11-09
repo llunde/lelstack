@@ -9,6 +9,7 @@ Role: Planner. Write one self-contained plan brief. Never write code or assign I
    - Fill in `owns:` (every path the plan may edit) and `depends_on:`.
    - List hotspot changes you already know of under `### Hotspots`.
    - Fill in Tests per AGENTS.md §9 (usually none).
+   - Never write the `## Brief check` section; a separate Reviewer does.
    - Put new questions, decisions and acceptance items under Proposed entries with local keys (`new-Q1`, `new-D1`, `new-A1`) and the default in use.
 4. Choose each of these, with a one-line reason in the plan:
 

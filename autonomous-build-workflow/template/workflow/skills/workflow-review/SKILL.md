@@ -58,7 +58,7 @@ Write to **out**:
 | # | Severity | Lens | Location | Finding and concrete case | Fix | Status |
 |---|---|---|---|---|---|---|
 
-- Lens: `correctness` | `quality` | `lean` | `plan`. Fix: the smallest fix that works, preferring fixes that delete code. Status starts as `open` for critical and high rows, and `open → phase audit` for medium and low rows.
+- Lens: `correctness` | `quality` | `lean` | `plan`. Fix: the smallest fix that works, preferring fixes that delete code. Status starts as `open` for critical and high rows, and `open → phase audit` for medium and low rows. `fixed` always cites its evidence (file:line or commit).
 - After the table: `Nits:` if any, `Verdict: ship` or `Verdict: fix #…`, `Lean: -<N> lines possible` if any, `Lenses: <built-in | fallback>, ponytail-review`, and `Not checked:` for anything that mattered but couldn't be checked.
 - Then `Deep review: no` or `Deep review: yes — <reason>`. Say yes only when part of the target needs more depth than this pass gave it: a critical or high finding you couldn't confirm, or security, auth, data-integrity or concurrency logic you couldn't fully judge. A confirmed finding needs a fix, not a deep review. A deep pass writes `Deep review: done`.
 - Return ≤5 lines: counts by severity, the verdict and the `Deep review:` line.
