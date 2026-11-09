@@ -10,7 +10,7 @@ Role: Orchestrator. Load the `caveman` skill. Read AGENTS.md, workflow/plans/ind
 
 **After a context compaction:** discard what the summary says about the state of the work. Finish nothing you "remember" being in the middle of. Re-run recover.md from disk, exactly as in a new session, then continue the loop.
 
-**Session budget** (only when harness.md has automatic resume on): end the session cleanly (§4, "Session budget reached") after a phase audit, or once this session has closed the number of plans in harness.md (default 6), whichever comes first.
+**Session budget:** after a phase audit, or once this session has closed the number of plans in harness.md (default 6), reset your context, since every turn re-reads all of it. With automatic resume on, end the session cleanly (§4, "Session budget reached"). Otherwise, if the harness lets you compact or clear your own context (harness.md), do that and re-run recover.md. If it can't, carry on.
 
 ## 1. Dispatch rules
 Pick tier and effort for every dispatch. Every dispatch costs quota or money, so start at the cheapest setting that fits the work and escalate only with a reason. The starting points below are defaults for your judgment, not fixed assignments.

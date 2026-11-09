@@ -211,7 +211,7 @@ Deny rules win over allow rules, so a force push stays blocked. Editing the perm
 
 ## 7. Optional add-ons
 
-- **Automatic resume** (off by default). `build` is safe to re-run at any point (`workflow/commands/recover.md`), so a shell loop or a scheduled task can start it again after a usage reset, until it reports a stop condition other than "usage running low" or "session budget reached". Set it to `on` in harness.md; that also enables the Orchestrator's session budget. Leave it off until a few supervised runs look right: it spends quota unattended.
+- **Automatic resume** (off by default). `build` is safe to re-run at any point (`workflow/commands/recover.md`), so a shell loop or a scheduled task can start it again after a usage reset, until it reports a stop condition other than "usage running low" or "session budget reached". Set it to `on` in harness.md; the Orchestrator's session budget then ends the session instead of compacting it. Leave it off until a few supervised runs look right: it spends quota unattended.
 - **Obsidian.** For a readable graph and a status view. Bootstrap sets it up when the human uses Obsidian (§3 Stage A step 6).
   - **Vault:** open `workflow/` as the vault, so it contains only workflow files. `workflow/.obsidian/` is gitignored: it's viewer preference, and Obsidian rewrites it constantly.
   - **Config** (written by bootstrap; if Obsidian ignores it, set the same by hand in Settings): links in Markdown format with relative paths; excluded files `templates/`, `commands/`, `skills/`, `WORKFLOW.md`; graph colour groups by folder for `docs/`, `plans/`, `progress/`, `decisions/`, `questions/`, `audits/`.

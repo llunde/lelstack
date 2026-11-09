@@ -9,7 +9,7 @@ Agent-platform specifics; the rest of the workflow is harness-neutral. Every age
 | Orchestrator | strong / medium: the session's tier and effort, set through this harness's command binding or session settings |
 | Usage model | <e.g. subscription, token-bound: prefer standard tier for bulk work> |
 | Automatic resume | off · on (WORKFLOW.md §7) |
-| Orchestrator session budget | <after each phase audit, or after 6 closed plans; applies only when automatic resume is on> |
+| Orchestrator session budget | <after each phase audit, or after 6 closed plans (build.md, Session budget)> |
 | Tier-2 tools enabled | none |
 | Skills / plugins (guidance only) | <name → role / phase that uses it> |
 | Required integrations | <none · per tool integration a phase can't work without (e.g. an MCP server): name → phases and roles; how to confirm its tools are reachable; recovery steps if not (recover.md step 0, build.md §4)> |
@@ -27,6 +27,7 @@ Added YYYY-MM-DD by <bootstrap | harness>.
 | Worktrees | <harness-native (e.g. Claude Code Agent tool isolation) · Orchestrator-created: `git worktree add <location>/<unit> -b wt/<unit> <integration branch>`> |
 | Worktree location | <e.g. `.claude/worktrees/` or `../<repo>.worktrees/`; sub-agents must be able to edit there without permission prompts. If inside the repo: gitignored and excluded from test discovery, lint, search and file watchers> |
 | Review: correctness lens | <built-in review an agent can start read-only on a range or paths, e.g. Claude Code `/code-review <effort> <target>` (never `--fix`) · or `fallback` (workflow-review SKILL.md, Fallback bug hunt)> |
+| Context reset | <how the Orchestrator compacts or clears its own context · none> |
 | Permissions | <baseline applied (WORKFLOW.md §6): where, e.g. `.claude/settings.json`; confirmed with one allowed and one denied command> |
 
 | Skill | Status | SKILL.md path |

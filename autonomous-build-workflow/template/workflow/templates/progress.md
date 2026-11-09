@@ -8,6 +8,8 @@ created: YYYY-MM-DD
 
 Plan: [NNN](../plans/NNN-slug.md)
 
+<!-- Leave out any section below Review that has nothing in it. -->
+
 ## Built
 <what was built, terse (AGENTS.md §6 Voice); a reviewer new to the code can follow it>
 
@@ -28,9 +30,6 @@ Plan: [NNN](../plans/NNN-slug.md)
 
 ## Decisions and deviations
 <D-NNN added; any deviation from the plan, and why>
-
-## Notable files
-<path — what changed (the full list is in git)>
 
 ## Follow-ups
 <deferred items and where they went>

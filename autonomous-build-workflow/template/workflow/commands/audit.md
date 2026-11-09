@@ -9,7 +9,7 @@ Role: Orchestrator for Reviewers. Load the `caveman` skill. Source code is read-
    - duplication across sections
    - earlier remediations still holding
    - tests that don't meet AGENTS.md §9 (no flow, not critical, not a regression), or duplicate each other: deletion candidates, grouped in one plan
-   - governance: link policy (AGENTS.md §6 Links: no links to hubs, none in indexes); untagged commits; docs drift (README, stack.md, decisions vs code; docs vs shipped scope); index consistency, including decision status and supersede links; pending acceptance count
+   - governance: links (AGENTS.md §6 Links: none in indexes, none broken; other link placement isn't a finding); untagged commits; docs drift (README, stack.md, decisions vs code; docs vs shipped scope); index consistency, including decision status and supersede links; pending acceptance count
 4. **Synthesize** `report.md` from the template, leaving "Plans spawned" and "Retro" for steps 5 and 6. You write the file; a sub-agent that synthesizes returns the report as text, since some harnesses block sub-agents from writing it. State coverage gaps plainly. Sections that weren't covered go first in the next audit.
 5. **Plans.**
    - One plan per critical or high finding (or tight cluster of them), with Pri `next`.
