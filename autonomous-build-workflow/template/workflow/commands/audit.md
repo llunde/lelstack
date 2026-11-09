@@ -2,7 +2,7 @@
 
 Role: Orchestrator for Reviewers. Load the `caveman` skill. Source code is read-only. Write only to workflow/audits/<date>-<scope>/, workflow/plans/, workflow/questions/, the indexes, workflow/retro.md, and the Status column of plan-review findings in progress notes. A final audit may also fix docs (README, links) directly.
 
-1. **Setup.** Create the folder. Record HEAD as `audited_through`. The scope is everything since the previous audit's `audited_through`, plus the phase's plans and any adopted commits. Run `check-full` and record the result as the gate (failure triage by a Helper if it fails). Collect every `open → phase audit` finding from the `## Review` sections of every progress note whose plan closed in scope. They go into the report as findings without being reviewed again, and are marked there `→ audit <date> F<n>`.
+1. **Setup.** Create the folder. Record HEAD as `audited_through`. The scope is everything since the previous audit's `audited_through`, plus the phase's plans and any adopted commits. Run `check-full` and record the result as the gate (failure triage by a Helper if it fails). Collect every `open → phase audit` row from the `## Review` sections of every progress note whose plan closed in scope. Don't re-review or copy them: the report lists them by reference (`plan NNN #n`) with counts, and step 5 plans them.
 2. **Sections.** Split the scope into non-overlapping sections (by module or layer). Dispatch Reviewers in parallel (within the read-only cap in harness.md). Each Reviewer runs the `workflow-review` skill with the section's paths as the target, level `full` for sections holding a high-risk area from the overview and `light` otherwise, and out `section-<name>.md`. It adds a "Read fully / not read" list, and returns ≤5 lines. The skill's lenses cover correctness, safety, scale, tests, speed and lean code; the cross-cutting pass below covers what spans sections.
 3. **Cross-cutting pass** (you, or one Reviewer at strong / medium), written to `section-cross-cutting.md`:
    - constraints that span modules
@@ -10,13 +10,13 @@ Role: Orchestrator for Reviewers. Load the `caveman` skill. Source code is read-
    - earlier remediations still holding
    - tests that don't meet AGENTS.md §9 (no flow, not critical, not a regression), or duplicate each other: deletion candidates, grouped in one plan
    - governance: link policy (AGENTS.md §6 Links: no links to hubs, none in indexes); untagged commits; docs drift (README, stack.md, decisions vs code; docs vs shipped scope); index consistency, including decision status and supersede links; pending acceptance count
-4. **Synthesize** `report.md` from the template, leaving "Plans spawned" and "Retro" for steps 5 and 6. State coverage gaps plainly. Sections that weren't covered go first in the next audit.
+4. **Synthesize** `report.md` from the template, leaving "Plans spawned" and "Retro" for steps 5 and 6. You write the file; a sub-agent that synthesizes returns the report as text, since some harnesses block sub-agents from writing it. State coverage gaps plainly. Sections that weren't covered go first in the next audit.
 5. **Plans.**
    - One plan per critical or high finding (or tight cluster of them), with Pri `next`.
    - Medium findings grouped by area.
    - All low findings in one sweep plan.
    - Governance findings in one docs plan.
-   Number them after the last plan, with `source: audit <date> F<n>`. Product ambiguities become questions with defaults. Fix index and link bookkeeping directly. Fill in the report's "Plans spawned".
+   Number them after the last plan, with `source: audit <date> F<n>`. Collected plan-review rows join these plans by reference (`source: plan NNN review #n`): set each row's Status to `open → plan MMM`, or `accepted: <reason>` when no behaviour change is worth a plan. Product ambiguities become questions with defaults. Fix index and link bookkeeping directly. Fill in the report's "Plans spawned".
 6. **Retro.** Start Helpers to gather the numbers (fix rounds, escalations, model mix, repeats, overturned defaults), then judge them yourself. Read only what's on disk for this scope: progress notes and their Review sections, this report, Resolver runs and re-dispatches, questions resolved since the last audit. Append observations to workflow/retro.md:
    - **escape:** a critical or high finding in this audit that its plan's review missed (name the plan, its review level, the Executor's and Reviewer's tier/effort, and the finding).
    - **repeat:** the same kind of finding, deviation or question in 3 or more plans.

@@ -12,7 +12,8 @@ Phase: <link to the phase doc>
 
 ## Summary
 - Sections: <...> · Coverage gaps: <what wasn't fully read, and why>
-- Counts: critical n · high n · medium n · low n · governance n
+- Counts (new in this audit): critical n · high n · medium n · low n · governance n
+- Collected from plan reviews: <plan NNN #n, ...> · medium n · low n (not copied; planned in step 5)
 - Earlier remediations re-verified: <held / regressed: ...>
 
 ## Findings

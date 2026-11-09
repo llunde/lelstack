@@ -24,7 +24,7 @@ Plan: [NNN](../plans/NNN-slug.md)
 
 | # | Severity | Lens | Location | Finding and concrete case | Fix | Status |
 |---|---|---|---|---|---|---|
-<Status: open | fixed | open → phase audit | open → plan MMM | → audit YYYY-MM-DD F<n>. "Open" means exactly `open`.>
+<Status: open | fixed | open → phase audit | open → plan MMM | accepted: <reason>. "Open" means exactly `open`.>
 
 ## Decisions and deviations
 <D-NNN added; any deviation from the plan, and why>

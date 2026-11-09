@@ -168,7 +168,7 @@ For each phase of the project, the Orchestrator repeats:
 2. **Plan:** a Planner writes the brief: goal, tasks, which files it may touch, tests, review level. A cheap Reviewer checks it for blocking problems only.
 3. **Execute:** one Executor, or several in parallel, each in its own git worktree when the work splits cleanly.
 4. **Verify:** run the project's `check` script and the definition of done.
-5. **Review:** a fresh Reviewer runs a combined review: the harness's built-in code review plus `ponytail-review`, checked against the plan. A deeper pass on a stronger model runs only when the first pass asks for one or the change is risky. Critical and high findings get one fix round.
+5. **Review:** a fresh Reviewer runs a combined review: the harness's built-in code review plus `ponytail-review`, checked against the plan. A deeper pass on a stronger model runs only when the first pass asks for one or the change is risky. Critical and high findings, and medium ones inside the plan's own files, get one fix round. Lows go to the phase audit, and nits without a concrete failure aren't tracked.
 6. **Close:** commit, update the indexes, push.
 
 ```mermaid
@@ -187,9 +187,9 @@ flowchart TD
     S & PS --> V
     INT --> V["✔ Verify<br/><small>check · definition of done</small>"]
     V --> R["🔍 Review<br/><small>code-review + ponytail-review + plan check<br/>deep pass only on escalation</small>"]
-    R -->|critical / high| FX["Fix round<br/><small>one rung up</small>"]
+    R -->|critical / high,<br/>medium in own files| FX["Fix round<br/><small>one rung up for critical / high</small>"]
     FX --> R
-    R -->|medium / low| PA["Parked for the phase audit"]
+    R -->|other medium / low| PA["Parked for the phase audit"]
     R -->|clean| CL(["📦 Close<br/><small>commit · update indexes · push</small>"])
     PA --> CL
 
