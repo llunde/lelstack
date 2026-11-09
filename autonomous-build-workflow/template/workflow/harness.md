@@ -5,12 +5,13 @@ Agent-platform specifics; the rest of the workflow is harness-neutral. Every age
 ## Shared settings
 | Setting | Value |
 |---|---|
-| Max parallel workers | 3 |
+| Max parallel workers | writing units: 3 · read-only agents (reviews, audit sections, Helpers): 3. Lower the first when units share a single resource (one app, one database) |
 | Usage model | <e.g. subscription, token-bound: prefer standard tier for bulk work> |
 | Automatic resume | off · on (WORKFLOW.md §7) |
 | Orchestrator session budget | <after each phase audit, or after 6 closed plans; applies only when automatic resume is on> |
 | Tier-2 tools enabled | none |
 | Skills / plugins (guidance only) | <name → role / phase that uses it> |
+| Required integrations | <none · per tool integration a phase can't work without (e.g. an MCP server): name → phases and roles; how to confirm its tools are reachable; recovery steps if not (recover.md step 0, build.md §4)> |
 
 ## <Harness, e.g. Claude Code>
 Added YYYY-MM-DD by <bootstrap | harness>.

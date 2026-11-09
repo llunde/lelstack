@@ -118,7 +118,7 @@ The bootstrap agent loads the `caveman` skill once the preflight passes (AGENTS.
 4. Choose the stack if the description doesn't fix it. Prefer what the human knows and what the agent's environment can verify. Record it as D-001 with the alternatives considered.
    - **Probe** the environment (which tools exist, which versions) rather than assuming, then write `workflow/stack.md`, including the E2E, Git and Concurrency sections (the outermost headless layer and smoke flows, integration branch, remote, conflict hotspots for this stack, worktree setup).
    - If `check` can't run here at all, declare **static-only mode** in stack.md. The human must accept it explicitly at sign-off.
-   - Choose skills or plugins and record them in harness.md. List any tier-2 tools in stack.md and enable them in harness.md.
+   - Choose skills or plugins and record them in harness.md, including any required integration a phase can't work without (how to confirm it, and recovery steps if it's missing). List any tier-2 tools in stack.md and enable them in harness.md.
 5. Fill in AGENTS.md §1, §4 and §6.
 6. Seed `workflow/plans/index.md` with one row per phase and row `001 Walking skeleton`. Other plans can be listed by title now. Their briefs are written just in time.
 7. **Sign-off gate.** Show the human a summary of one page or less: phases, stack and why, constraints, environment capabilities (and static-only mode if it applies), and open questions with their defaults. Apply corrections. When approved, commit `docs: project definition (bootstrap)`, then run `build`.

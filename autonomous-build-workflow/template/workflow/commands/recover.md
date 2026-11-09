@@ -2,14 +2,14 @@
 
 Role: Orchestrator. Run at the start of every `build` session and after any context compaction, before the loop (build.md §2). It resumes interrupted work from disk; where the repo and an index disagree, the repo wins.
 
-0. **Harness and requirements.** Identify your harness. If harness.md has no section for it, stop (build.md §4, "Unknown harness"). Otherwise check that every required skill in that section is still available. If one is missing, stop (build.md §4) and report it. In-flight units started from another harness are resumed normally in step 3; their worktrees are plain git.
+0. **Harness and requirements.** Identify your harness. If harness.md has no section for it, stop (build.md §4, "Unknown harness"). Otherwise check that every required skill in that section is still available. If one is missing, stop (build.md §4) and report it. **Required integrations:** if harness.md lists one that the current phase (the first that isn't `closed`) needs, confirm its tools are reachable in this session; discovering them is not using them. If they aren't, stop (build.md §4, "Integration unavailable"). In-flight units started from another harness are resumed normally in step 3; their worktrees are plain git.
 1. `git status`. If the main checkout has a **staged squash merge** for a unit still in "In flight", that unit already passed `check` and review in its worktree: finish integrate.md steps 5–6 (bookkeeping, commit, clean-up). Never reset the main checkout; it may hold uncommitted bookkeeping.
 2. **In-progress plans** (in the main checkout; worktree units are step 3). Assume the worker died. Resume each at its first unfinished step, read from disk; where the repo and an index disagree, the repo wins:
    - plan file missing or half-written → a fresh Planner;
    - tasks not all ticked (read from the plan file for `sequential`, from the `## Tasks` in the progress or slice notes otherwise) → compare the ticked tasks with the diff, untick what doesn't hold, note the discrepancy in the progress note, and dispatch a fresh Executor for the rest;
    - all tasks ticked, `check` not yet passing → Verify (build.md §2 step 4);
    - `## Review` empty and `review:` isn't `skip` → Review (build.md §2 step 5);
-   - `## Review` ends with `Deep review: yes` and no deep pass ran → the deep pass (build.md §2 step 5);
+   - `## Review` ends with `Deep review: yes`, the first pass ran below strong tier, and no deep pass ran → the deep pass (build.md §2 step 5);
    - critical or high findings with Status exactly `open` → the fix round (build.md §2 step 5), one rung up;
    - otherwise → Close (build.md §2 step 6).
 3. **In-flight units.** Compare the "In flight" table with `git worktree list` and local unit branches. For each unit:
