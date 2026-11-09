@@ -30,16 +30,16 @@ The operating contract for building <project>. Read it in full at the start of e
 ## 5. Roles
 | Role | Tier / effort (starting point; ladder and reasons: build.md §1) | Does | Never |
 |---|---|---|---|
-| Orchestrator | the session's model | picks next work, dispatches, light-verifies, integrates units, assigns IDs, keeps indexes, commits, pushes | reads docs/code broadly, implements (exception: bookkeeping, and one-line fixes with no logic) |
-| Planner | strong / high; standard / medium for small or pattern-following plans | writes one self-contained plan brief, proposes questions and decisions | writes code, assigns IDs |
+| Orchestrator | the session's model (harness.md) | picks next work, dispatches, light-verifies, integrates units, assigns IDs, keeps indexes, commits, pushes | reads docs/code broadly, implements (exception: bookkeeping, and one-line fixes with no logic) |
+| Planner | strong / medium; standard / medium for small or pattern-following plans | writes one self-contained plan brief, proposes questions and decisions | writes code, assigns IDs |
 | Executor | standard / medium | implements one plan or slice in its owned paths, writes only the tests the plan lists, ticks tasks, writes its note | commits to the integration branch, edits outside owned paths, assigns IDs |
-| Resolver | strong / high | resolves a merge conflict between two units, keeping both intents | guesses when the intents contradict |
+| Resolver | strong / medium | resolves a merge conflict between two units, keeping both intents | guesses when the intents contradict |
 | Helper | fast / low | failure triage; read-only gathering; returns facts and evidence (≤10 lines) | edits anything, decides, fixes |
-| Reviewer | standard / medium; strong / high for `full` plans and deep passes | checks a plan brief for blocking problems; runs the `workflow-review` skill on a plan's diff or an audit section; records findings | edits source; fixes findings; reviews code it wrote |
+| Reviewer | standard / medium; strong / medium for `full` plans; strong / high for deep passes | checks a plan brief for blocking problems; runs the `workflow-review` skill on a plan's diff or an audit section; records findings | edits source; fixes findings; reviews code it wrote |
 
 Without sub-agents, one agent plays every role in sequence, one plan per session, always `sequential`.
 
-**Models.** Tiers `fast` / `standard` / `strong` map to models in `workflow/harness.md`; effort is `low` … `max`, ignored where the harness can't set it per dispatch. The Orchestrator picks both for every dispatch: cheapest fitting starting point, higher only with a stated reason (build.md §1). Helpers (fast / low) read a lot and return little: failure triage and read-only gathering, never decisions.
+**Models.** Tiers `fast` / `standard` / `strong` map to models in `workflow/harness.md`; effort is `low`, `medium` or `high` (harness.md maps them to the harness's levels; nothing higher is used), ignored where the harness can't set it per dispatch. The Orchestrator picks both for every dispatch: cheapest fitting starting point, higher only with a stated reason (build.md §1). Helpers (fast / low) read a lot and return little: failure triage and read-only gathering, never decisions.
 
 **Execution** (`sequential` by default, `parallel-shared`, `parallel-worktree`) is chosen per plan (workflow/commands/plan.md). A **unit** is a slice of a plan (`042-A`) or a whole plan (`042`); when units may run at the same time: build.md §1. Audit sections run in parallel by default.
 

@@ -15,26 +15,26 @@ Role: Orchestrator. Load the `caveman` skill. Read AGENTS.md, workflow/plans/ind
 ## 1. Dispatch rules
 Pick tier and effort for every dispatch. Every dispatch costs quota or money, so start at the cheapest setting that fits the work and escalate only with a reason. The starting points below are defaults for your judgment, not fixed assignments.
 
-**Ladder** (one rung up = the next step): fast / low → standard / medium → standard / high → strong / high → strong / xhigh. `max` is not used in the loop.
+**Ladder** (one rung up = the next step): fast / low → standard / medium → standard / high → strong / medium → strong / high. Effort is `low`, `medium` or `high`; harness.md maps these to the harness's own levels. Nothing above strong / high is used.
 
 | Work | Start at | Start higher only when |
 |---|---|---|
-| Planner | strong / high; standard / medium for small or pattern-following plans (sweep, reconcile, docs, a sibling of a done plan) | |
+| Planner | strong / medium; standard / medium for small or pattern-following plans (sweep, reconcile, docs, a sibling of a done plan) | |
 | Brief check | standard / medium | |
-| Executor | standard / medium; fast / low for mechanical work (docs only, renames, low-finding sweeps, deleting tests) | strong / high: cross-cutting architectural change; subtle security, auth, concurrency or data-integrity logic |
-| Reviewer, first pass | standard / medium | strong / high: the plan is `review: full` (then no standard pass runs first) |
+| Executor | standard / medium; fast / low for mechanical work with no logic (docs only, renames, deleting tests) | strong / medium: cross-cutting architectural change; subtle security, auth, concurrency or data-integrity logic |
+| Reviewer, first pass | standard / medium | strong / medium: the plan is `review: full` (then no standard pass runs first) |
 | Reviewer, deep pass | strong / high | only on escalation (§2 step 5) |
-| Resolver | strong / high | |
-| Audit sections · synthesis, cross-cutting pass, final audit | section `light`: standard / medium, `full`: strong / high · strong / high | |
+| Resolver | strong / medium | |
+| Audit sections · synthesis, cross-cutting pass, final audit | section `light`: standard / medium, `full`: strong / medium · strong / medium | |
 | Helper: failure triage, read-only gathering | fast / low | |
 
 - **Units at the same time** only when all of these hold: their `owns:` paths are disjoint from each other and from every in-flight unit; none `depends_on` an unfinished plan; any shared contract they rely on has already landed; they belong to the current phase; the writing-unit cap in harness.md isn't exceeded.
 - **Reason above the start.** A dispatch above its starting point names one concrete reason, from the table or the plan. "Important", "to be safe" or "best quality" are not reasons. Unsure: take the start; one failed cheap attempt costs less than routine expensive ones.
 - **Model and effort:** the plan's `model:` is a proposal. Change it if needed; lower it when its stated reason doesn't hold.
-- **Escalate on retry:** a fix round, an Executor sent back after verification, a re-dispatch after a contradiction, or `check` failing twice on one unit each go one rung up from the setting that failed. Skip a rung only with a stated reason. A retry never steps down.
-- **xhigh** only after strong / high already failed on this unit, or with a stated complexity reason no lower rung can meet. Expect it rarely.
+- **Escalate on retry:** a fix round, an Executor sent back after verification, a re-dispatch after a contradiction, or `check` failing twice on one unit each go one rung up from the setting that failed. Skip a rung only with a stated reason. A retry never steps down. The ladder ends at strong / high: a retry that fails there becomes a remediation plan or a question, never a higher setting.
+- **strong / high** only for a deep pass, or after strong / medium already failed on this unit. Size, importance, "to be safe" or a first attempt never count. Expect it rarely.
 - **Usage running low:** effort may drop on non-critical work, never on high-risk work. Prefer stopping and resuming to building high-risk code on a cheap setting.
-- **Record** the setting used, with the one-line reason for any start above the table or any escalation, in "In flight" and the progress note (`Model: standard/medium → standard/high (fix round: #1 open after standard/medium)`).
+- **Record** every dispatch's setting by role, with the one-line reason for any start above the table or any escalation: in "In flight" while it runs, and in the progress note's `Model:` line, which you complete at close (`Model: P strong/medium · B standard/medium · E standard/medium → standard/high (fix round: #1 open) · R standard/medium`).
 - **Helpers read a lot and return little.** Never start an agent for something a quiet script already reduces to one line (a green `check`, a lint run). Start a Helper when a failure's output is more than a few lines, or when facts must be gathered across many files; several can run in parallel. Helpers return facts and evidence, never decisions: you decide.
 - **Required integrations** (harness.md): in a phase that needs one, dispatch nothing until recover.md step 0 confirmed it in this session; agents started before a reconnect may never get its tools. Every Executor brief in such a phase adds: "If <integration> is missing, stop at once and return `<integration> unavailable`; don't work around it and log no question." On that return, or if it disappears from your own session, dispatch nothing new and stop (§4).
 - **Git:** the integration branch is set in stack.md (default `main`). Only you commit to it and push it. Unit branches are local only and never pushed.

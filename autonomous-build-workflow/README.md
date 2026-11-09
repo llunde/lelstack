@@ -76,7 +76,7 @@ You also need git. Claude Code's built-in `/code-review` is used if it's availab
 1. Create an empty folder for the project and open your agent harness there.
 2. Give the agent read access to this folder. In Claude Code, approve it when asked, or add it to `additionalDirectories`. Alternatively, copy this folder into the new repo first.
 3. Say: **"Bootstrap from `<path to this folder>/SPEC.md`"**
-4. Answer two quick questions: which harness you're in, and whether you view the workflow in Obsidian. Then confirm the model mapping (e.g. `opus` / `sonnet` / `haiku`).
+4. Answer two quick questions: which harness you're in, and whether you view the workflow in Obsidian. Then confirm which of the harness's models map to the strong, standard and fast tiers.
 
 The agent checks the required skills, copies the workflow files into the repo, sets up your harness (commands, permissions), commits, and asks for the project description.
 
@@ -113,14 +113,14 @@ Long-running agent work tends to fail in predictable ways: context filled up, wo
 
 ### The roles
 
-| Role | Does | Model (Claude Code default) |
+| Role | Does | Starting tier · effort |
 |---|---|---|
-| **Orchestrator** | Picks work, dispatches agents, verifies, integrates, commits, pushes | your session's model |
-| **Planner** | Writes one self-contained plan brief | Opus, high effort; Sonnet for small or pattern-following plans |
-| **Executor** | Implements one plan or slice | Sonnet, medium; Haiku for mechanical work; Opus only with a reason |
-| **Reviewer** | Checks a plan brief for blockers; reviews a plan's changes, never its own code | Sonnet, medium; Opus for high-risk plans and deep passes |
-| **Resolver** | Resolves merge conflicts between parallel work | Opus, high |
-| **Helper** | Reads long logs or many files and returns a short summary | Haiku, low |
+| **Orchestrator** | Picks work, dispatches agents, verifies, integrates, commits, pushes | your session's model (strong · medium by default) |
+| **Planner** | Writes one self-contained plan brief | strong · medium; standard · medium for small or pattern-following plans |
+| **Executor** | Implements one plan or slice | standard · medium; fast · low for mechanical work; strong only with a reason |
+| **Reviewer** | Checks a plan brief for blockers; reviews a plan's changes, never its own code | standard · medium; strong · medium for high-risk plans; strong · high for deep passes |
+| **Resolver** | Resolves merge conflicts between parallel work | strong · medium |
+| **Helper** | Reads long logs or many files and returns a short summary | fast · low |
 
 The Orchestrator picks the model and effort for each task. It starts at the cheapest setting that fits, goes higher only with a stated reason, and climbs one rung of a fixed ladder when a retry is needed.
 
@@ -128,10 +128,10 @@ The Orchestrator picks the model and effort for each task. It starts at the chea
 %%{init: {"theme": "base", "themeVariables": {"fontFamily": "-apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "15px", "primaryColor": "#EEF2FF", "primaryBorderColor": "#6366F1", "primaryTextColor": "#1E1B4B", "lineColor": "#7C8DA6", "clusterBkg": "#F8FAFC", "clusterBorder": "#CBD5E1", "edgeLabelBackground": "#FFFFFF", "tertiaryColor": "#F8FAFC"}}}%%
 flowchart LR
     O(("🎯<br/>Orchestrator"))
-    PL["📝 Planner<br/><small>strong · high</small>"]
+    PL["📝 Planner<br/><small>strong · medium<br/>standard when pattern-following</small>"]
     EX["🛠 Executor<br/><small>standard · medium<br/>strong with a reason · fast when mechanical</small>"]
     RV["🔍 Reviewer<br/><small>standard · medium<br/>strong for full review or deep pass</small>"]
-    RS["🔀 Resolver<br/><small>strong · high</small>"]
+    RS["🔀 Resolver<br/><small>strong · medium</small>"]
     HP["📋 Helper<br/><small>fast · low</small>"]
     FS[("workflow/<br/><small>files in git</small>")]
     O -->|plan this| PL
@@ -168,7 +168,7 @@ For each phase of the project, the Orchestrator repeats:
 2. **Plan:** a Planner writes the brief: goal, tasks, which files it may touch, tests, review level. A cheap Reviewer checks it for blocking problems only.
 3. **Execute:** one Executor, or several in parallel, each in its own git worktree when the work splits cleanly.
 4. **Verify:** run the project's `check` script and the definition of done.
-5. **Review:** a fresh Reviewer runs a combined review: Claude Code's code review plus `ponytail-review`, checked against the plan. A deeper pass on a stronger model runs only when the first pass asks for one or the change is risky. Critical and high findings get one fix round.
+5. **Review:** a fresh Reviewer runs a combined review: the harness's built-in code review plus `ponytail-review`, checked against the plan. A deeper pass on a stronger model runs only when the first pass asks for one or the change is risky. Critical and high findings get one fix round.
 6. **Close:** commit, update the indexes, push.
 
 ```mermaid
@@ -369,7 +369,7 @@ gitGraph
 
 ### Costs and limits
 
-- Every dispatch starts at the cheapest model and effort that fits (Haiku for log triage and mechanical edits, Sonnet for most building and reviewing). Going higher needs a stated reason, which lands in the progress note, and each audit's retro counts the model mix so you can tune the starting points.
+- Every dispatch starts at the cheapest model and effort that fits (fast tier for log triage and mechanical edits, standard tier at medium effort for most building and reviewing; nothing above strong at high effort). Going higher needs a stated reason, which lands in the progress note, and each audit's retro counts the model mix so you can tune the starting points.
 - Scripts are quiet: a passing `check` prints one line, not a full test log.
 - The Orchestrator keeps its own context small and, after a context compaction, re-reads the state from disk instead of trusting its memory.
 - **Automatic resume** (off by default): a shell loop or scheduled task can restart `/build` after each usage reset. Turn it on in `workflow/harness.md` once a few supervised runs look right. It spends quota while you're away.

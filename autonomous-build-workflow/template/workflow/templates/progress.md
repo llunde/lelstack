@@ -12,7 +12,7 @@ Plan: [NNN](../plans/NNN-slug.md)
 <what was built, terse (AGENTS.md §6 Voice); a reviewer new to the code can follow it>
 
 ## Verification
-- Model: <tier/effort, plus any escalation and why>
+- Model: <tier/effort of every dispatch for this plan by role (P, B, E, R), plus any escalation and why; the Orchestrator completes it at close>
 - check: pass (<n> tests) | static-only
 - Tier 2: <what was observed, and how>
 - Tier 3: <acceptance items proposed (new-A…) | none>

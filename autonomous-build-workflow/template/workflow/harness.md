@@ -6,6 +6,7 @@ Agent-platform specifics; the rest of the workflow is harness-neutral. Every age
 | Setting | Value |
 |---|---|
 | Max parallel workers | writing units: 3 · read-only agents (reviews, audit sections, Helpers): 3. Lower the first when units share a single resource (one app, one database) |
+| Orchestrator | strong / medium: the session's tier and effort, set through this harness's command binding or session settings |
 | Usage model | <e.g. subscription, token-bound: prefer standard tier for bulk work> |
 | Automatic resume | off · on (WORKFLOW.md §7) |
 | Orchestrator session budget | <after each phase audit, or after 6 closed plans; applies only when automatic resume is on> |
@@ -22,7 +23,7 @@ Added YYYY-MM-DD by <bootstrap | harness>.
 | Command invocation | <e.g. `/build`; or the prompt "Follow workflow/commands/build.md"> |
 | Sub-agents | <yes (nesting: n levels) · no → single-agent mode> |
 | Tiers strong / standard / fast | <e.g. Claude Code: opus / sonnet / haiku · Codex: sol / terra / luna> |
-| Effort per dispatch | <yes: levels … · no: harness default> |
+| Effort per dispatch | <yes: workflow `low` / `medium` / `high` → this harness's levels … · no: harness default> |
 | Worktrees | <harness-native (e.g. Claude Code Agent tool isolation) · Orchestrator-created: `git worktree add <location>/<unit> -b wt/<unit> <integration branch>`> |
 | Worktree location | <e.g. `.claude/worktrees/` or `../<repo>.worktrees/`; sub-agents must be able to edit there without permission prompts. If inside the repo: gitignored and excluded from test discovery, lint, search and file watchers> |
 | Review: correctness lens | <built-in review an agent can start read-only on a range or paths, e.g. Claude Code `/code-review <effort> <target>` (never `--fix`) · or `fallback` (workflow-review SKILL.md, Fallback bug hunt)> |

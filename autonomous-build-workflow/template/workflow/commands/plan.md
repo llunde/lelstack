@@ -27,6 +27,6 @@ Role: Planner. Write one self-contained plan brief. Never write code or assign I
 
 **ponytail:** `full`; `lite` only with a reason (e.g. the docs ask for a deliberately extensible API); never `ultra`.
 
-**model:** the Executor's starting point in build.md §1 (standard / medium, or fast / low for mechanical work). Propose higher only with a concrete reason from that table, written in the plan; `review: full` alone is not one.
+**model:** the Executor's starting point in build.md §1 (standard / medium, or fast / low for mechanical work with no logic). Propose higher only with a concrete reason from that table, written in the plan; `review: full` alone is not one.
 
 5. Return ≤10 lines: goal, execution, review level, model, owns, scope, proposed entries.
