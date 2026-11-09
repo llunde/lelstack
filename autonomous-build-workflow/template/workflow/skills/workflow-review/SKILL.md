@@ -18,7 +18,7 @@ A review that dies is simply run again. Only the merged result is written.
 
 ## 1. Run both lenses on the same target
 Run them in parallel when the harness allows; both are read-only.
-- **Correctness:** the built-in review named in workflow/harness.md, on the target. Effort `low` for `light`, `medium` for `full`. If harness.md says `fallback`, or an agent can't start it, run the fallback bug hunt below instead, in a fresh sub-agent where possible.
+- **Correctness:** the built-in review named in workflow/harness.md, on the target. Effort `low` for `light`, `medium` for `full`, `high` for a deep pass (a **focus** is given). If harness.md says `fallback`, or an agent can't start it, run the fallback bug hunt below instead, in a fresh sub-agent where possible.
 - **Quality and lean:** `ponytail-review` on the target (required, so always available).
 
 Wait until every lens has finished before merging. Never write the verdict, return, or edit **out** after returning while a lens is still running. If the built-in review can't start or doesn't finish, run the fallback bug hunt and record it on the `Lenses:` line (§4).

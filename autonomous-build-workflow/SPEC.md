@@ -175,7 +175,7 @@ Bindings are the only workflow files besides `AGENTS.md` that live outside `work
   ---
   Follow `workflow/commands/<name>.md` exactly. Arguments: $ARGUMENTS
   ```
-- Tiers: strong = `opus`, standard = `sonnet`, fast = `haiku` (aliases; don't use `fable`). Pass `model` and `effort` on every Agent call (per-call effort needs Claude Code v2.1.292 or later; leave `CLAUDE_CODE_EFFORT_LEVEL` unset, since it overrides per-call effort). Sub-agents go through the Agent tool. They can nest (by default up to three levels) and can run skills, which the review needs: a Reviewer sub-agent runs `/code-review` and `ponytail-review` itself. All other dispatching stays with the Orchestrator. For `parallel-worktree`, use the Agent tool's worktree isolation and record the worktree path and branch it reports in "In flight". Add `.claude/worktrees/` to `.gitignore` and exclude it from test discovery, lint and search. Skills and plugins go in `.claude/settings.json`.
+- Tiers: strong = `opus`, standard = `sonnet`, fast = `haiku` (aliases; don't use `fable`). Pass `model` and `effort` on every Agent call (per-call effort needs Claude Code v2.1.292 or later; leave `CLAUDE_CODE_EFFORT_LEVEL` unset, since it overrides per-call effort). Sub-agents go through the Agent tool. They can nest (by default up to three levels) and can run skills, which the review needs: a Reviewer sub-agent runs `/code-review` and `ponytail-review` itself. All other dispatching stays with the Orchestrator. For `parallel-worktree`, use the Agent tool's worktree isolation and record the worktree path and branch it reports in "In flight". Add `.claude/worktrees/` to `.gitignore` and exclude it from test discovery, lint and search. Skills and plugins go in `.claude/settings.json`. The Orchestrator's strong / medium is the commands' `model: opus` plus `"effortLevel": "medium"` in `.claude/settings.json`.
 
 **Permissions baseline** (every harness). An autonomous run should neither stall on permission prompts nor run with everything allowed. The `harness` command writes this baseline into the harness's own permission config and records where in its section of harness.md:
 - **Allow** without prompting: the repo's `scripts/`; git inside the repo and its worktrees (status, diff, log, add, commit, rebase, merge, worktree, branch, fetch); reading and editing files in the repo and the worktree location; pushing the integration branch.
@@ -187,6 +187,7 @@ Bindings are the only workflow files besides `AGENTS.md` that live outside `work
 Claude Code: `.claude/settings.json` (committed; the copy is `bindings/claude-code/.claude/settings.json`):
 ```json
 {
+  "effortLevel": "medium",
   "permissions": {
     "allow": ["Bash(scripts/*)", "Bash(./scripts/*)", "Bash(git status)", "Bash(git status *)", "Bash(git diff *)",
               "Bash(git log *)", "Bash(git add *)", "Bash(git rm *)", "Bash(git commit *)", "Bash(git rebase *)",
