@@ -8,5 +8,6 @@ Use this for new features, batches of improvements, or bug reports too large for
    - Update the overview's phase list.
    - Update out-of-scope "Pulled into scope" where it applies.
    - Change AGENTS.md §4 only with explicit human confirmation.
+   - If the new scope needs a technology that no skill in `workflow/skills/` covers and the skill library in harness.md is readable, select from it as in WORKFLOW.md §0 (Skill library), with the human's confirmation.
 4. Add the phase row (`open`) and one planned row per Scope-In bullet, in build order.
 5. Show the human the phase doc and the rows. After confirmation, commit `docs(intake): phase NN <name> (intake)` and push (AGENTS.md §6). Next step: `build`.

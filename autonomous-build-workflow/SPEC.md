@@ -27,10 +27,17 @@ Install the required skills at user level, for every harness that will run the l
 | `ponytail` skill | Planner, Executor, Resolver (AGENTS.md §6 Simplicity) | **required**: stop |
 | `ponytail-review` skill | `workflow-review`, quality and lean lens | **required**: stop |
 | `workflow-review` skill | every review and audit | none: bootstrap copies it into the repo (`workflow/skills/workflow-review/`) |
+| domain skills from the skill library | the plans that name them (harness.md) | optional: none selected, the loop runs as normal |
 | the harness's built-in code review (e.g. Claude Code `/code-review`) | `workflow-review`, correctness lens | optional: the fallback bug hunt in `workflow-review` |
 | git, and a harness with sub-agents | the loop; parallel work | git required; without sub-agents, single-agent mode (§6) |
 
-**Loading a skill** means using the harness's skill mechanism. A harness without one reads the skill's `SKILL.md` at the path recorded in `workflow/harness.md` and follows it.
+**Loading a skill** means using the harness's skill mechanism. A harness without one reads the skill's `SKILL.md` at the path recorded in `workflow/harness.md` and follows it. Skills under `workflow/skills/` are always loaded by reading their `SKILL.md`, since harnesses don't discover them there.
+
+**Skill library.** Technology skills authored for reuse across projects (the `skills/` folder next to this folder, or a path the human gives). Each is a folder with a `SKILL.md` whose frontmatter has `name` and `description`. Selection (Stage B step 4, `intake`):
+- Read only the frontmatter of each `SKILL.md`. Skip skills with `disable-model-invocation: true`: they are tools the human runs, not build knowledge.
+- Select a skill only when its description matches the stack or the scope in the docs. When unsure, leave it out.
+- Copy each selected skill's folder into `workflow/skills/<name>/` as is. The copy is pinned: it changes only through a human decision (AGENTS.md §3.11).
+- Record each in harness.md (Skills / plugins, and the Skills table) with the roles and phases that use it, and the library's path (Skill library). Library missing or nothing matches: record `none` and continue.
 
 ---
 
@@ -86,6 +93,7 @@ workflow/
   templates/                plan, progress, question, decision, audit, phase
   commands/                 build (+ recover, integrate, plan), audit, resolve, intake, change, harness
   skills/workflow-review/   SKILL.md: the combined review used by every review step
+  skills/<name>/            domain skills copied from the skill library (§0), if any
 ```
 
 **Layout rules**
@@ -118,7 +126,7 @@ The bootstrap agent loads the `caveman` skill once the preflight passes (AGENTS.
 4. Choose the stack if the description doesn't fix it. Prefer what the human knows and what the agent's environment can verify. Record it as D-001 with the alternatives considered.
    - **Probe** the environment (which tools exist, which versions) rather than assuming, then write `workflow/stack.md`, including the E2E, Git and Concurrency sections (the outermost headless layer and smoke flows, integration branch, remote, conflict hotspots for this stack, worktree setup).
    - If `check` can't run here at all, declare **static-only mode** in stack.md. The human must accept it explicitly at sign-off.
-   - Choose skills or plugins and record them in harness.md, including any required integration a phase can't work without (how to confirm it, and recovery steps if it's missing). List any tier-2 tools in stack.md and enable them in harness.md.
+   - Select domain skills from the skill library (§0) and copy them in. Choose skills or plugins and record them in harness.md, including any required integration a phase can't work without (how to confirm it, and recovery steps if it's missing). List any tier-2 tools in stack.md and enable them in harness.md.
 5. Fill in AGENTS.md §1, §4 and §6.
 6. Seed `workflow/plans/index.md` with one row per phase and row `001 Walking skeleton`. Other plans can be listed by title now. Their briefs are written just in time.
 7. **Sign-off gate.** Show the human a summary of one page or less: phases, stack and why, constraints, environment capabilities (and static-only mode if it applies), and open questions with their defaults. Apply corrections. When approved, commit `docs: project definition (bootstrap)`, then run `build`.

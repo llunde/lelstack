@@ -71,6 +71,8 @@ The workflow checks for them before it does anything else and stops if one is mi
 
 You also need git. Claude Code's built-in `/code-review` is used if it's available. Other harnesses fall back to a built-in review prompt.
 
+Technology skills from [`../skills/`](../skills/) are optional and need no install. During the interview, bootstrap picks the ones that match your stack from their descriptions, copies them into `workflow/skills/` (pinned per project) and lists them in `workflow/harness.md`. Plans name the ones their Executor loads. If none match, nothing changes.
+
 ### 2. Bootstrap
 
 1. Create an empty folder for the project and open your agent harness there.

@@ -54,7 +54,7 @@ Without sub-agents, one agent plays every role in sequence, one plan per session
 
 ## 6. Conventions
 - **Code:** boring, idiomatic, readable by a reviewer new to the stack. Surgical diffs: every changed line traces to a task. No speculative abstraction. Do handle failures that can really happen.
-- **Skills** are required (WORKFLOW.md §0). Load them through the harness, or by reading the `SKILL.md` path in harness.md.
+- **Skills** are required (WORKFLOW.md §0). Load them through the harness, or by reading the `SKILL.md` path in harness.md. Domain skills in `workflow/skills/` are optional and loaded only by a role whose plan names them (`Skills / tools to consult`).
 - **Simplicity (`ponytail`):** Planners, Executors and Resolvers load the `ponytail` skill at the start of every task, at the plan's `ponytail:` level (default `full`; `lite` only with a reason in the plan; never `ultra`).
   - Precedence: docs and plan > this file (constraints §4, verification §7, done §8, tests §9) > ponytail. Ponytail decides **how** something is built, never **whether** a requirement in docs or the plan is built. If a requirement looks unnecessary, build the simplest version that meets it and propose a question.
   - Spec-silent details take the lazy option as the default in use, proposed as a question so the human can override it in `resolve`.
