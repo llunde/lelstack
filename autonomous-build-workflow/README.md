@@ -59,13 +59,13 @@ flowchart TD
 
 ### 1. Install the required skills (once)
 
-Install these skills at user level, for every agent harness you'll use. Search for them by name.
+Install these skills at user level, for every agent harness you'll use.
 
-| Skill | What it does in the workflow |
-|---|---|
-| `caveman` | Terse output from every agent, so context isn't wasted on filler |
-| `ponytail` | Keeps plans and code minimal: reuse first, no speculative abstractions |
-| `ponytail-review` | The quality and lean half of every code review |
+| Skill | What it does in the workflow | Get it |
+|---|---|---|
+| `caveman` | Terse output from every agent, so context isn't wasted on filler | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) |
+| `ponytail` | Keeps plans and code minimal: reuse first, no speculative abstractions | [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) |
+| `ponytail-review` | The quality and lean half of every code review | same repo as `ponytail` |
 
 The workflow checks for them before it does anything else and stops if one is missing.
 

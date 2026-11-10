@@ -19,13 +19,13 @@ In a project, this file is `workflow/WORKFLOW.md`. There, `template/X` means the
 
 ## 0. Requirements
 
-Install the required skills at user level, for every harness that will run the loop. Find them by name. The preflight (§3) and every `build` check for them and stop if one is missing. There is no degraded mode.
+Install the required skills at user level, for every harness that will run the loop, from the sources linked below. The preflight (§3) and every `build` check for them and stop if one is missing. There is no degraded mode.
 
 | Requirement | Used by | If missing |
 |---|---|---|
-| `caveman` skill | every role (AGENTS.md §6 Voice) | **required**: stop |
-| `ponytail` skill | Planner, Executor, Resolver (AGENTS.md §6 Simplicity) | **required**: stop |
-| `ponytail-review` skill | `workflow-review`, quality and lean lens | **required**: stop |
+| `caveman` skill ([source](https://github.com/JuliusBrussee/caveman)) | every role (AGENTS.md §6 Voice) | **required**: stop |
+| `ponytail` skill ([source](https://github.com/DietrichGebert/ponytail)) | Planner, Executor, Resolver (AGENTS.md §6 Simplicity) | **required**: stop |
+| `ponytail-review` skill ([source](https://github.com/DietrichGebert/ponytail), same repo) | `workflow-review`, quality and lean lens | **required**: stop |
 | `workflow-review` skill | every review and audit | none: bootstrap copies it into the repo (`workflow/skills/workflow-review/`) |
 | domain skills from the skill library | the plans that name them (harness.md) | optional: none selected, the loop runs as normal |
 | the harness's built-in code review (e.g. Claude Code `/code-review`) | `workflow-review`, correctness lens | optional: the fallback bug hunt in `workflow-review` |
