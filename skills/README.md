@@ -24,5 +24,6 @@ Then, in the project: `/harvest lelstack: <lelstack> focus: <topic>` (Codex: `$h
 - Frontmatter: `name` (the folder name) and a `description` that says which technology and when to use it, so an agent can judge relevance from it alone.
 - `SKILL.md` is short and procedural. Longer reference material goes in separate files in the folder, linked from `SKILL.md`.
 - Say which versions it was verified against, and mark anything unproven.
+- Staleness: when a skill's `Verified against:` line is a major version or more behind the stack you use it on, treat its version-specific claims as unproven until checked, and harvest the project afterwards to update the skill.
 - Technology-specific is fine. Client or project specifics never are: no client or site names, domains, real content, credentials, or content-model details and business rules unique to one project.
 - Prefer updating an existing skill over adding a near-duplicate.

@@ -12,6 +12,7 @@ Verified against: Umbraco CMS 17.7.1, `@umbraco-cms/mcp-dev@lts-17` (17.6.11), u
 - Gaps and workarounds, by symptom: [pitfalls.md](pitfalls.md)
 
 ## Before the first write
+- The MCP server is a required integration: in the autonomous build workflow, record it under Required integrations in `workflow/harness.md` (phases and roles that write through it), so a build stops rather than working around a missing server.
 - Confirm the MCP tools exist in **this** agent's session with a read (`get-document-type-root`). An agent started before the server (re)connected never gets them: start a fresh one.
 - Get input shapes from the schema tools (`get-data-type-schema`, `get-document-type-schema`). They describe property values, not data type configuration, and can be wrong (pitfalls.md). For configuration, read back an existing or built-in item and copy its shape.
 
