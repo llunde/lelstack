@@ -37,7 +37,8 @@ Install the required skills at user level, for every harness that will run the l
 - Read only the frontmatter of each `SKILL.md`. Skip skills with `disable-model-invocation: true`: they are tools the human runs, not build knowledge.
 - Select a skill only when its description matches the stack or the scope in the docs. When unsure, leave it out.
 - Copy each selected skill's folder into `workflow/skills/<name>/` as is. The copy is pinned: it changes only through a human decision (AGENTS.md §3.11).
-- Record each in harness.md (Skills / plugins, and the Skills table) with the roles and phases that use it, and the library's path (Skill library). Library missing or nothing matches: record `none` and continue.
+- Read each selected skill's `Verified against:` line. If the stack is a major version or more ahead, mark its harness.md entry `stale: verified on <versions>`; roles that load it treat its version-specific claims as unproven until checked.
+- Record each in harness.md (Skills / plugins, and the Skills table) with the roles and phases that use it. Record the library's path under Skill library whenever the library exists, so `intake` can select later; `none` only if it's missing. Nothing selected: Skills / plugins says `none` for domain skills, and the loop runs as normal.
 
 ---
 
@@ -129,7 +130,7 @@ The bootstrap agent loads the `caveman` skill once the preflight passes (AGENTS.
    - Select domain skills from the skill library (§0) and copy them in. Choose skills or plugins and record them in harness.md, including any required integration a phase can't work without (how to confirm it, and recovery steps if it's missing). List any tier-2 tools in stack.md and enable them in harness.md.
 5. Fill in AGENTS.md §1, §4 and §6.
 6. Seed `workflow/plans/index.md` with one row per phase and row `001 Walking skeleton`. Other plans can be listed by title now. Their briefs are written just in time.
-7. **Sign-off gate.** Show the human a summary of one page or less: phases, stack and why, constraints, environment capabilities (and static-only mode if it applies), and open questions with their defaults. Apply corrections. When approved, commit `docs: project definition (bootstrap)`, then run `build`.
+7. **Sign-off gate.** Show the human a summary of one page or less: phases, stack and why, constraints, selected domain skills (with any `stale` mark) and required integrations, environment capabilities (and static-only mode if it applies), and open questions with their defaults. Apply corrections. When approved, commit `docs: project definition (bootstrap)`, then run `build`.
 
 ---
 
