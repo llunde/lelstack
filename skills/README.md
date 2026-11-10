@@ -4,6 +4,7 @@ Skills I author, each in its own folder with a `SKILL.md`. Third-party skills (c
 
 | Skill | What it is |
 |---|---|
+| [umbraco-mcp](umbraco-mcp/SKILL.md) | Umbraco CMS structure and content through the Umbraco Developer MCP server: setup, write loop, value shapes, gaps (Umbraco 17) |
 | [harvest](harvest/SKILL.md) | Run by hand: mines a project for proven learnings and drafts them here as skill or workflow changes, uncommitted |
 
 ## Harvesting a project
