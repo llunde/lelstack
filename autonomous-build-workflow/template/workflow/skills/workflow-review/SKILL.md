@@ -17,7 +17,7 @@ Read-only: lists findings, changes no code. Never pass a fix flag to a review to
 A review that dies is simply run again. Only the merged result is written.
 
 ## 1. Run both lenses on the same target
-Start each lens as a skill or command call (WORKFLOW.md §0, Loading a skill). Reading a lens's `SKILL.md` and doing its job yourself is not that lens, however small the target. Run them in parallel when the harness allows; both are read-only.
+Start each lens as a skill or command call (WORKFLOW.md §0, Loading a skill). On a harness with a skill mechanism, reading a lens's `SKILL.md` and doing its job yourself is not that lens, however small the target. Run them in parallel when the harness allows; both are read-only.
 - **Correctness:** the built-in review named in workflow/harness.md, on the target. Effort `low` for `light`, `medium` for `full`, `high` for a deep pass (a **focus** is given). Only if harness.md says `fallback`, or the call fails or never finishes, run the fallback bug hunt below instead, in a fresh sub-agent where possible, and record why on the `Lenses:` line (§4). A call whose result shows it reviewed a different target, or nothing, counts as failed.
 - **Quality and lean:** `ponytail-review` on the target. It's required, so it is always available and has no fallback.
 
@@ -60,7 +60,7 @@ Write to **out**:
 
 - Lens: `correctness` | `quality` | `lean` | `plan`. Fix: the smallest fix that works, preferring fixes that delete code. Status starts as `open` for critical and high rows, and `open → phase audit` for medium and low rows. `fixed` always cites its evidence (file:line or commit).
 - After the table: `Nits:` if any, `Verdict: ship` or `Verdict: fix #…`, `Lean: -<N> lines possible` if any, the `Lenses:` line, and `Not checked:` for anything that mattered but couldn't be checked.
-- `Lenses:` names only lenses you started as a call, each with how it ended: `Lenses: <built-in review> (call), ponytail-review (call)`. A fallback bug hunt reads `fallback (harness.md says fallback)` or `fallback (<built-in review> failed: <error line>)`. A lens you didn't start as a call is listed as `not run`, never by its name alone.
+- `Lenses:` names only lenses you started as a call, each with how it ended: `Lenses: <built-in review> (call), ponytail-review (call)`. On a harness without a skill mechanism, a lens loaded by reading its `SKILL.md` reads `(read)`. A fallback bug hunt reads `fallback (harness.md says fallback)` or `fallback (<built-in review> failed: <reason>)`. A lens you didn't start as a call is listed as `not run`, never by its name alone.
 - Then `Deep review: no` or `Deep review: yes — <reason>`. Say yes only when part of the target needs more depth than this pass gave it: a critical or high finding you couldn't confirm, or security, auth, data-integrity or concurrency logic you couldn't fully judge. A confirmed finding needs a fix, not a deep review. A deep pass writes `Deep review: done`.
 - Return ≤5 lines: counts by severity, the verdict, the `Lenses:` line and the `Deep review:` line.
 
