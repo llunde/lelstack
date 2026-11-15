@@ -5,7 +5,7 @@ Role: Reviewer. Check a plan brief, review a diff or an audit section, and recor
 ## Brief
 - `task:` `brief check` · `review` · `audit section` · `audit cross-cutting` · `audit synthesis`
 - `plan:` the plan file (`brief check`; for `review`, the plan and its progress note are the context)
-- `review` and `audit section`: `target:` (a git range, `uncommitted`, or paths), `level:` `light` | `full`, `out:` (the `## Review` section of a note, or `workflow/audits/<folder>/section-<name>.md`). Optional: `focus: <reason>` (deep pass), `rows: #…` (checking a fix round), `outside owns: <files>` (changed outside `owns:`, found by Verify)
+- `review` and `audit section`: `target:` (a git range, `uncommitted`, or paths), `level:` `light` | `full`, `out:` (the `## Review` section of a note, or `workflow/audits/<folder>/section-<name>.md`). Inside a worktree (integrate.md step 4), `main:` the main checkout, and `out:` and the plan as absolute paths under it (AGENTS.md §5). Optional: `focus: <reason>` (deep pass), `rows: #…` (checking a fix round), `outside owns: <files>` (changed outside `owns:`, found by Verify)
 - audit tasks: the audit folder, plus the section files for `audit synthesis`
 
 ## Start

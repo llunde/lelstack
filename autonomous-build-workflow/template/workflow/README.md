@@ -16,7 +16,7 @@ decisions/index.md        decision table
 decisions/D-NNN-slug.md   one file per settled fact
 acceptance.md             human-only checks (A-NNN)
 retro.md                  evidence-backed observations and improvement proposals (written by audits)
-dashboard.base            Obsidian Bases status view (optional, WORKFLOW.md §7); .obsidian/ is gitignored
+dashboard.base            Obsidian Bases status view (optional, WORKFLOW.md §7); .obsidian/ is local-only
 plans/index.md            plan + phase status table
 plans/NNN-slug.md         one brief per plan
 progress/NNN-slug.md      one completion record per plan
@@ -28,6 +28,7 @@ audits/YYYY-MM-DD-<scope>/   section-*.md + report.md
 templates/                plan, progress, question, decision, audit, phase
 commands/                 build (+ recover, integrate), audit, resolve, intake, change, harness
 roles/                    planner, executor, reviewer, resolver, helper: one file per dispatched role
+scripts/git-setup         sets up the workflow repo (.git/workflow) and both ignore lists (WORKFLOW.md §2 Git)
 skills/workflow-review/   SKILL.md: the combined review used by every review step
 skills/<name>/            domain skills copied from the skill library at bootstrap or intake, if any
 ```

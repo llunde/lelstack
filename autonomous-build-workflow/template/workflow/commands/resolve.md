@@ -11,4 +11,4 @@ Write only to question notes, the questions index, `workflow/decisions/`, the pl
    - If the decision changes scope, record it in out-of-scope "Pulled into scope", or send it to `intake`.
    - For a `needs: workflow` question: if approved, apply the change to the named workflow file, add a decision, and mark the proposal `approved` in retro.md. If declined, mark it `declined`.
 4. Optionally, record results for pending acceptance rows that the human has run.
-5. Commit `docs(questions): resolve Q-... (resolve)` and push (AGENTS.md §6). Summarize what was resolved, which plans were queued, and what is still open.
+5. Save `docs(questions): resolve Q-... (resolve)` (AGENTS.md §6 Commits) and push. Summarize what was resolved, which plans were queued, and what is still open.

@@ -1,0 +1,67 @@
+#!/bin/sh
+# Two repos in one working tree (WORKFLOW.md §2): the application in .git, the workflow in .git/workflow.
+# Idempotent. Run from the repo root at bootstrap, at every recover, and after editing the lists below.
+# Usage: workflow/scripts/git-setup [<workflow remote url>]
+set -eu
+
+# Root paths the workflow owns. `harness` adds each harness's root files here.
+WORKFLOW_PATHS='/workflow/
+/AGENTS.md
+/CLAUDE.md
+/.claude/'
+# Inside those paths but tracked by neither repo: machine-local or regenerable.
+LOCAL_ONLY='/workflow/.logs/
+/workflow/.obsidian/
+/.claude/worktrees/
+/.claude/settings.local.json'
+
+[ -d .git ] || { echo "git-setup: run from the repo root (no .git directory here)" >&2; exit 1; }
+W="git --git-dir=.git/workflow"
+
+[ -d .git/workflow ] || git init -q --bare --initial-branch=main .git/workflow
+$W config core.bare false
+$W config core.worktree ../..
+
+# App repo ignores every workflow path. Only the marked block in info/exclude is ours.
+begin='# >>> workflow (git-setup)'
+end='# <<< workflow'
+mkdir -p .git/info .git/workflow/info
+touch .git/info/exclude
+awk -v b="$begin" -v e="$end" '$0==b{skip=1} !skip{print} $0==e{skip=0}' .git/info/exclude > .git/info/exclude.tmp
+{ cat .git/info/exclude.tmp; echo "$begin"; echo "$WORKFLOW_PATHS"; echo "$end"; } > .git/info/exclude
+rm .git/info/exclude.tmp
+
+# Workflow repo tracks exactly the workflow paths, minus the local-only ones.
+{ echo '# written by workflow/scripts/git-setup'; echo '/*'; echo "$WORKFLOW_PATHS" | sed 's/^/!/'; echo "$LOCAL_ONLY"; } > .git/workflow/info/exclude
+
+if [ $# -ge 1 ]; then
+  $W remote get-url origin >/dev/null 2>&1 || $W remote add origin "$1"
+  $W fetch -q origin
+  # A fresh clone of the app: bring the workflow files in from the remote.
+  # checkout-index without -f never overwrites a file that already exists here.
+  if ! $W rev-parse -q --verify HEAD >/dev/null && $W rev-parse -q --verify origin/main >/dev/null; then
+    $W reset -q origin/main
+    $W branch -q --set-upstream-to=origin/main main
+    $W checkout-index -a
+  fi
+fi
+
+# Never lose work: no workflow file may be ignored by both repos, or tracked by the app repo.
+paths=$(echo "$WORKFLOW_PATHS" | sed 's#^/##; s#/$##')
+local_only=$(echo "$LOCAL_ONLY" | sed 's#^/##')
+problems=0
+# shellcheck disable=SC2086 # paths are split on purpose
+for f in $($W status --porcelain --ignored=matching --untracked-files=normal -- $paths | sed -n 's/^!! //p'); do
+  echo "$local_only" | grep -qxF "$f" && continue
+  echo "git-setup: $f is ignored by both repos (a .gitignore pattern matches it); tracked by neither" >&2
+  problems=1
+done
+# shellcheck disable=SC2086
+tracked=$(git ls-files -- $paths)
+if [ -n "$tracked" ]; then
+  echo "git-setup: the app repo tracks workflow files; untrack them with: git rm -r --cached -- <path>" >&2
+  echo "$tracked" | head -5 >&2
+  problems=1
+fi
+[ "$problems" -eq 0 ] && echo "git-setup: ok"
+exit "$problems"

@@ -35,6 +35,7 @@ Scripts detect their environment (toolchain location, versions) themselves. They
 ## Git
 - Integration branch: `main` <or the branch the human chose>
 - Remote: <origin | none> · Push: at plan close (AGENTS.md §6)
+- Workflow remote (`.git/workflow`, WORKFLOW.md §2 Git): <none | url>; set one to continue on another computer
 
 ## Concurrency
 - Conflict hotspots (Orchestrator-only files): <e.g. *.csproj / *.sln, package.json + lockfile, Package.swift, DI registration, route table>

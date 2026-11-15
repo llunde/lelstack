@@ -2,14 +2,14 @@
 
 Role: Orchestrator for Reviewers. Load the `caveman` skill. Source code is read-only. Write only to workflow/audits/<date>-<scope>/, workflow/plans/, workflow/questions/, the indexes, workflow/retro.md, and the Status column of plan-review findings in progress notes. A final audit may also fix docs (README, links) directly.
 
-1. **Setup.** Create the folder. Record HEAD as `audited_through`. The scope is everything since the previous audit's `audited_through`, plus the phase's plans and any adopted commits. Run `check-full` and record the result as the gate (failure triage by a Helper if it fails). Collect every `open → phase audit` row from the `## Review` sections of every progress note whose plan closed in scope. Don't re-review or copy them: the report lists them by reference (`plan NNN #n`) with counts, and step 5 plans them.
+1. **Setup.** Create the folder. Record the integration branch HEAD (app repo) as `audited_through`. The scope is everything since the previous audit's `audited_through`, plus the phase's plans and any adopted commits. Run `check-full` and record the result as the gate (failure triage by a Helper if it fails). Collect every `open → phase audit` row from the `## Review` sections of every progress note whose plan closed in scope. Don't re-review or copy them: the report lists them by reference (`plan NNN #n`) with counts, and step 5 plans them.
 2. **Sections.** Split the scope into non-overlapping sections (by module or layer). Dispatch Reviewers (workflow/roles/reviewer.md) in parallel (within the read-only cap in harness.md), each with `task: audit section`, `target:` the section's paths, `level: full` for sections holding a high-risk area from the overview and `light` otherwise, and `out: section-<name>.md`. Apply the lens check (build.md §2 step 5) to each return. The skill's lenses cover correctness, safety, scale, tests, speed and lean code; the cross-cutting pass below covers what spans sections.
 3. **Cross-cutting pass** (you, or one Reviewer (build.md §1) with `task: audit cross-cutting`), written to `section-cross-cutting.md`:
    - constraints that span modules, checked against what actually runs, not only the reviewed code and output: the app's background jobs and default outbound calls, and the build's own tools
    - duplication across sections
    - earlier remediations still holding
    - tests that don't meet AGENTS.md §9 (no flow, not critical, not a regression), or duplicate each other: deletion candidates, grouped in one plan
-   - governance: links (AGENTS.md §6 Links: none in indexes, none broken; other link placement isn't a finding); untagged commits; docs drift (README, stack.md, decisions vs code; docs vs shipped scope); index consistency, including decision status and supersede links; pending acceptance count
+   - governance: links (AGENTS.md §6 Links: none in indexes, none broken; other link placement isn't a finding); app commits no `App-Commit:` trailer names (recover.md step 5); workflow traces in the app repo (AGENTS.md §6: workflow files tracked, workflow words in app commit messages, app code, tests, README or CI that read or name `workflow/`); docs drift (README, stack.md, decisions vs code; docs vs shipped scope); index consistency, including decision status and supersede links; pending acceptance count
 4. **Synthesize** `report.md` from the template, leaving "Plans spawned" and "Retro" for steps 5 and 6. You write the file; a Reviewer you dispatch with `task: audit synthesis` returns the report as text, since some harnesses block sub-agents from writing it. State coverage gaps plainly. Sections that weren't covered go first in the next audit.
 5. **Plans.**
    - One plan per critical or high finding (or tight cluster of them), with Pri `next`.
@@ -28,7 +28,7 @@ Role: Orchestrator for Reviewers. Load the `caveman` skill. Source code is read-
    - Project-level changes (an AGENTS.md rule, a stack.md symptom, a higher review level for an area): one question note each, `needs: workflow`, with a recommendation; the default in use is "no change".
    - Spec-level changes (would help any project): a line under "For the workflow".
    Never loosen a gate (definition of done, review levels, required skills) by default, and never apply a proposal yourself. Fill in the report's "Retro".
-7. **Commit** `docs(audit): <scope> findings (audit)`. Then return to `build`, or push (AGENTS.md §6) and stop if this audit was run on its own.
+7. **Save** `docs(audit): <scope> findings (audit)` (AGENTS.md §6 Commits). Then return to `build`, or push (AGENTS.md §6) and stop if this audit was run on its own.
 
 ## Additional checks for scope `final`
 - **Retro summary:** rank the "For the workflow" lines by evidence and put the top items in `report.md`. They're the input for the next revision of the workflow.
