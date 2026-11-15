@@ -124,6 +124,8 @@ Long-running agent work tends to fail in predictable ways: context filled up, wo
 | **Resolver** | Resolves merge conflicts between parallel work | strong · medium |
 | **Helper** | Reads long logs or many files and returns a short summary | fast · low |
 
+Each role the Orchestrator dispatches follows one file in `workflow/roles/`: what it gets, what it loads, what it may write, what it never does and what it returns. The Orchestrator itself follows `workflow/commands/build.md`. To change what a role does, edit its role file. To change when it runs or at which tier, edit `build.md` (§1 holds the tiers). The roles work the same in every harness: no per-harness agent definitions are needed.
+
 The Orchestrator picks the model and effort for each task. It starts at the cheapest setting that fits, goes higher only with a stated reason, and climbs one rung of a fixed ladder when a retry is needed.
 
 ```mermaid
@@ -234,6 +236,7 @@ workflow/
   stack.md           how to build, test and run this project
   harness.md         agent and model setup per harness
   commands/ …        the procedures the agents follow
+  roles/ …           what each dispatched agent does: planner, executor, reviewer, resolver, helper
 ```
 
 ---
