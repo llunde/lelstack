@@ -9,7 +9,7 @@ Role: Executor. Implement one plan, one unit of it, or a list of fixes, inside t
 - optional: `outside owns: <files>` (changed outside `owns:`, found by Verify), `integration: <name>`, and any line the Orchestrator adds (e.g. re-read AGENTS.md)
 
 ## Start
-Load the `caveman` skill, the `ponytail` skill at the plan's `ponytail:` level, and every skill on the plan's `Skills / tools to consult` line; keep them active. Read AGENTS.md unless your harness already loaded it (harness.md, Rulebook loading), then the plan. If an `integration:` is named and its tools are missing, stop at once and return `<integration> unavailable`; don't work around it and log no question.
+For `fast path`, the plan doesn't exist yet: load `caveman`, write the plan (Do), then continue here. Load the `caveman` skill, the `ponytail` skill at the plan's `ponytail:` level, and every skill on the plan's `Skills / tools to consult` line; keep them active. Read AGENTS.md unless your harness already loaded it (harness.md, Rulebook loading), then the plan. If an `integration:` is named and its tools are missing, stop at once and return `<integration> unavailable`; don't work around it and log no question.
 
 ## Do
 - `build`: implement the plan, or your slice of it, end to end. `resume`: the same, from the first unticked task (the Orchestrator has already unticked what the diff doesn't support). `fix`: change only what the listed rows or specifics need, plus the `outside owns:` files they name; leave review Status cells alone.
@@ -27,7 +27,7 @@ Load the `caveman` skill, the `ponytail` skill at the plan's `ponytail:` level, 
 - Confirm on disk that your note exists and how many tasks are ticked, and read in full every artifact a verify step names; don't sample.
 
 ## Never
-Commit to the integration branch or push; edit outside owned paths; assign IDs or put local keys in code; add tests the plan doesn't list; change the plan's scope (record a deviation instead).
+Commit to the integration branch or push; edit outside owned paths (except `outside owns:` files a `fix` names); assign IDs or put local keys in code; add tests the plan doesn't list; change the plan's scope (record a deviation instead).
 
 ## Return
 ≤15 lines: files, tests, proposed entries, requested shared edits, deviations; a worktree unit adds its branch and last commit. Or exactly `not fast path` or `<integration> unavailable`.

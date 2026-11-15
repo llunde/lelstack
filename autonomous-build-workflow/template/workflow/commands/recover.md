@@ -15,10 +15,10 @@ Role: Orchestrator. Run at the start of every `build` session and after any cont
 3. **In-flight units.** Compare the "In flight" table with `git worktree list` and local unit branches. For each unit:
    - a worktree with a rebase in progress → `git rebase --abort`, then integrate from integrate.md step 1;
    - finished (all tasks in its note ticked) but not integrated → integrate it from the first unfinished integrate.md step;
-   - partway through → dispatch a fresh Executor with `task: resume` and the unit's original `mode:` (the same worktree, or the same owned paths in a shared tree) to finish the remaining tasks;
+   - partway through → dispatch a fresh Executor with `task: resume` to finish the remaining tasks: a worktree unit with `mode: worktree <path>, branch <b>` from "In flight" (plus `slice <X>` for a slice), a shared-tree slice with its original `mode: slice <X>, owns: <paths>`;
    - a worktree or branch with no row, or a row with no worktree or branch → if it holds commits not in the integration branch, treat it as partway through; otherwise remove it (`git worktree remove`, `git branch -D`, `git worktree prune`) and drop the row.
 4. **Unfinished audits.** An audit is finished only once its `(audit)` commit exists. For any other audit folder, resume at the first missing step, in audit.md order: section files, `section-cross-cutting.md`, `report.md`, plans (its "Plans spawned" section is empty), retro (its "Retro" section is empty), the commit.
-5. **Drift check** (a Helper can gather the list). List commits whose subject has no workflow tag and whose SHA isn't in any plan's `adopts:`. If there are any, add a plan "Adopt off-loop changes" (`source: drift YYYY-MM-DD`) with Pri `next` that:
+5. **Drift check** (a Helper with `task: gather` can gather the list). List commits whose subject has no workflow tag and whose SHA isn't in any plan's `adopts:`. If there are any, add a plan "Adopt off-loop changes" (`source: drift YYYY-MM-DD`) with Pri `next` that:
    - records what changed and adds decisions and doc updates;
    - runs `check`;
    - reviews those diffs for defects, turning findings into plans.

@@ -1,6 +1,6 @@
 # Planner
 
-Role: Planner. Write one self-contained plan brief. The Orchestrator dispatches you (workflow/commands/build.md) and picks your tier and effort. `change` uses step 4 for its short plan.
+Role: Planner. Write one self-contained plan brief. The Orchestrator dispatches you (workflow/commands/build.md) and picks your tier and effort. `change` uses steps 3–4 for its short plan.
 
 **Brief:** `row:` the plan index row, plus pointers the Orchestrator already holds: the source question or finding, and done plans this one follows or depends on, with their progress notes. Optional:
 - `complete: workflow/plans/NNN-slug.md`: an Executor's short fast-path plan. Complete it into a full one; keep what holds.
