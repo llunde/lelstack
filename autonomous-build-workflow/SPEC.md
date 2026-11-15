@@ -66,7 +66,6 @@ All workflow material lives under one top-level folder, `workflow/`, so the rest
 AGENTS.md                   rulebook: how to build (read in full every session)
 CLAUDE.md, .claude/ ...     harness stubs and tool config only (§6), never workflow documents
 README.md                   the project's README: what it is, run locally, install/deploy (kept current)
-scripts/                    setup, check, check-full, run (project-owned; named in workflow/stack.md)
 <project source, tests, CI, lint config ...>
 workflow/
   README.md                 map of this folder: what each file is for and who writes it
@@ -94,14 +93,15 @@ workflow/
   templates/                plan, progress, question, decision, audit, phase
   commands/                 build (+ recover, integrate), audit, resolve, intake, change, harness
   roles/                    planner, executor, reviewer, resolver, helper: one file per dispatched role
-  scripts/git-setup         sets up the workflow repo and both ignore lists (Git below)
+  scripts/                  setup, check, check-full, run: quiet wrappers around the project's own commands (stack.md); workflow-only helpers
+    git-setup               sets up the workflow repo and both ignore lists (Git below)
   skills/workflow-review/   SKILL.md: the combined review used by every review step
   skills/<name>/            domain skills copied from the skill library (§0), if any
 ```
 
 **Layout rules**
 - Outside `workflow/`, the only workflow files are `AGENTS.md` and the harness stubs and config folders that a tool requires at the root (§6). Those folders hold tool configuration only.
-- Project-owned tooling stays with the project and never moves into `workflow/`: tests, lint and format config, CI, and `scripts/`. `workflow/stack.md` records how to run them; it does not replace them.
+- **Application or workflow?** Application: source, tests, lint and format config, CI, and anything a person needs to build, run, test or reset the app from a clone (README commands, a database reset, seed data, container config). Workflow: everything that exists for the agents: the entry-point wrappers and helpers in `workflow/scripts/`, logs and tier-2 evidence (`workflow/.logs/`, local-only), and all of `workflow/`. Application files never read or name workflow files; a workflow script may call application code.
 - Refer to workflow files by exact path. Don't rely on search to find them (search tools that honor git's ignore rules skip them when searching from the root).
 
 **Git: two repos, one working tree**
@@ -142,7 +142,7 @@ The bootstrap agent loads the `caveman` skill once the preflight passes (AGENTS.
 3. Write `workflow/docs/00-overview.md`, the phase docs and `workflow/docs/out-of-scope.md`:
    - The overview covers vision, users, locked decisions, domain model, principles, **high-risk areas** (correctness-critical logic and capabilities that can only be confirmed in a specific environment) and the phase list, each phase linked to its doc (AGENTS.md §6 Links).
    - Phases go in dependency order, and each one should be a usable increment where possible.
-   - **Phase 1 starts with the walking skeleton (plan 001):** a minimal runnable app, service or library in the chosen layout, with a pure core and thin shell split, one e2e smoke test of the first user flow, working and quiet (stack.md entry points) `scripts/setup`, `check`, `check-full` and `run`, and a README "Run locally" section. `check` must pass in this environment.
+   - **Phase 1 starts with the walking skeleton (plan 001):** a minimal runnable app, service or library in the chosen layout, with a pure core and thin shell split, one e2e smoke test of the first user flow, working and quiet (stack.md entry points) `workflow/scripts/setup`, `check`, `check-full` and `run`, and a README "Run locally" section with the project's native commands. `check` must pass in this environment.
 4. Choose the stack if the description doesn't fix it. Prefer what the human knows and what the agent's environment can verify. Record it as D-001 with the alternatives considered.
    - **Probe** the environment (which tools exist, which versions) rather than assuming, then write `workflow/stack.md`, including the E2E, Git and Concurrency sections (the outermost headless layer and smoke flows, integration branch, remote, conflict hotspots for this stack, worktree setup).
    - If `check` can't run here at all, declare **static-only mode** in stack.md. The human must accept it explicitly at sign-off.
@@ -206,7 +206,7 @@ Bindings are the only workflow files besides `AGENTS.md` that live outside `work
 - Tiers: strong = `opus`, standard = `sonnet`, fast = `haiku` (aliases; don't use `fable`). Pass `model` and `effort` on every Agent call (per-call effort needs Claude Code v2.1.292 or later; leave `CLAUDE_CODE_EFFORT_LEVEL` unset, since it overrides per-call effort). Sub-agents go through the Agent tool. They can nest (by default up to three levels) and can run skills, which the review needs: a Reviewer sub-agent runs `/code-review` and `ponytail-review` itself. All other dispatching stays with the Orchestrator. For `parallel-worktree`, use the Agent tool's worktree isolation and record the worktree path and branch it reports in "In flight". `.claude/worktrees/` is local-only in `workflow/scripts/git-setup`; exclude it from test discovery, lint and search. Skills and plugins go in `.claude/settings.json`. The Orchestrator's strong / medium is the commands' `model: opus` plus `"effortLevel": "medium"` in `.claude/settings.json`.
 
 **Permissions baseline** (every harness). An autonomous run should neither stall on permission prompts nor run with everything allowed. The `harness` command writes this baseline into the harness's own permission config and records where in its section of harness.md:
-- **Allow** without prompting: the repo's `scripts/`; git inside the repo and its worktrees (status, diff, log, add, commit, rebase, merge, worktree, branch, fetch), and the same on the workflow repo (`git --git-dir=.git/workflow …`); reading and editing files in the repo and the worktree location; pushing the integration branch and the workflow repo.
+- **Allow** without prompting: `workflow/scripts/` (relative, and by the main checkout's absolute path for worktree units); git inside the repo and its worktrees (status, diff, log, add, commit, rebase, merge, worktree, branch, fetch), and the same on the workflow repo (`git --git-dir=.git/workflow …`); reading and editing files in the repo and the worktree location; pushing the integration branch and the workflow repo.
 - **Deny:** force pushes, `git reset --hard`, `git clean`, `git stash --all` (it sweeps up the workflow files), `rm -rf`, reading credential locations (`~/.ssh`, `~/.aws`, `.env` files), and `sudo`.
 - Also allow the stack's own commands from stack.md (worktree setup, dependency install) once they're known.
 - Everything else prompts. A prompt in an unattended run is a sign something went off-plan.
@@ -217,7 +217,7 @@ Claude Code: `.claude/settings.json` (tracked in the workflow repo; the copy is 
 {
   "effortLevel": "medium",
   "permissions": {
-    "allow": ["Bash(scripts/*)", "Bash(./scripts/*)", "Bash(git status)", "Bash(git status *)", "Bash(git diff *)",
+    "allow": ["Bash(workflow/scripts/*)", "Bash(./workflow/scripts/*)", "Bash(git status)", "Bash(git status *)", "Bash(git diff *)",
               "Bash(git log *)", "Bash(git add *)", "Bash(git rm *)", "Bash(git commit *)", "Bash(git rebase *)",
               "Bash(git merge *)", "Bash(git worktree *)", "Bash(git branch *)", "Bash(git fetch *)",
               "Bash(git -C *)", "Bash(git push)", "Bash(git push *)", "Bash(git --git-dir=.git/workflow *)",
@@ -232,7 +232,7 @@ Claude Code: `.claude/settings.json` (tracked in the workflow repo; the copy is 
   }
 }
 ```
-Deny rules win over allow rules, so a force push stays blocked. Editing the permission file itself always asks, so an agent can't loosen its own baseline; `harness` runs with you present. Delete slice notes with `git --git-dir=.git/workflow rm`. Add the worktree location to `permissions.additionalDirectories` if it's outside the repo. Rule syntax changes between versions: check it against the Claude Code permissions docs, and confirm with one allowed and one denied command.
+Deny rules win over allow rules, so a force push stays blocked. Editing the permission file itself always asks, so an agent can't loosen its own baseline; `harness` runs with you present. Delete slice notes with `git --git-dir=.git/workflow rm`. Add the worktree location to `permissions.additionalDirectories` if it's outside the repo, and `Bash(<main checkout>/workflow/scripts/*)` so worktree units can run the scripts by absolute path. Rule syntax changes between versions: check it against the Claude Code permissions docs, and confirm with one allowed and one denied command.
 
 **Harnesses that read `AGENTS.md` natively, or any other harness**
 - Invoke a command with the prompt "Follow workflow/commands/<name>.md.", or the harness's own custom-command mechanism if it has one (record which in its section). Codex reads AGENTS.md natively. If the harness has sub-agents, map the tiers to them. Otherwise use single-agent mode. Without native worktree isolation, the Orchestrator creates worktrees itself (harness.md); check that the harness lets sub-agents work in that location without permission prompts.

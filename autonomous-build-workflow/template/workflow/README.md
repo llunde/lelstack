@@ -1,6 +1,6 @@
 # workflow/
 
-Everything this project's agent workflow writes. The project's own code, tests, CI and `scripts/` live outside this folder. Process rules: `../AGENTS.md`; full spec: `WORKFLOW.md`.
+Everything this project's agent workflow writes. The project's own code, tests and CI live outside this folder (WORKFLOW.md §2: application or workflow?). Process rules: `../AGENTS.md`; full spec: `WORKFLOW.md`.
 
 ```
 README.md                 map of this folder: what each file is for and who writes it
@@ -28,7 +28,9 @@ audits/YYYY-MM-DD-<scope>/   section-*.md + report.md
 templates/                plan, progress, question, decision, audit, phase
 commands/                 build (+ recover, integrate), audit, resolve, intake, change, harness
 roles/                    planner, executor, reviewer, resolver, helper: one file per dispatched role
+scripts/                  setup, check, check-full, run: quiet wrappers around the project's own commands (stack.md); helpers
 scripts/git-setup         sets up the workflow repo (.git/workflow) and both ignore lists (WORKFLOW.md §2 Git)
+.logs/                    script logs and tier-2 evidence; local-only, tracked by neither repo
 skills/workflow-review/   SKILL.md: the combined review used by every review step
 skills/<name>/            domain skills copied from the skill library at bootstrap or intake, if any
 ```

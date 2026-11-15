@@ -2,8 +2,8 @@
   "effortLevel": "medium",
   "permissions": {
     "allow": [
-      "Bash(scripts/*)",
-      "Bash(./scripts/*)",
+      "Bash(workflow/scripts/*)",
+      "Bash(./workflow/scripts/*)",
       "Bash(git status)",
       "Bash(git status *)",
       "Bash(git diff *)",
