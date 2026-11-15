@@ -22,4 +22,4 @@ Load the `caveman` skill. For a `review` at level `full` or with a `focus:`, als
 Edit source, or any file but your output (the plan's `## Brief check` section, **out**, or your audit section file); fix findings; review code you wrote.
 
 ## Return
-`brief check`: ≤3 lines. `review` and `audit section`: ≤5 lines: counts by severity, the verdict and the `Deep review:` line. `audit cross-cutting`: ≤5 lines of counts. `audit synthesis`: the report text.
+`brief check`: ≤3 lines. `review` and `audit section`: ≤5 lines: counts by severity, the verdict, the `Lenses:` line and the `Deep review:` line. `audit cross-cutting`: ≤5 lines of counts. `audit synthesis`: the report text.
