@@ -1,6 +1,12 @@
-# plan
+# Planner
 
-Role: Planner. Write one self-contained plan brief. Never write code or assign IDs.
+Role: Planner. Write one self-contained plan brief. The Orchestrator dispatches you (workflow/commands/build.md) and picks your tier and effort. `change` uses step 4 for its short plan.
+
+**Brief:** `row:` the plan index row, plus pointers the Orchestrator already holds: the source question or finding, and done plans this one follows or depends on, with their progress notes. Optional:
+- `complete: workflow/plans/NNN-slug.md`: an Executor's short fast-path plan. Complete it into a full one; keep what holds.
+- `revise: workflow/plans/NNN-slug.md`: its `## Brief check` lists blocking problems. Revise the plan and mark each problem `fixed` or `rejected: <reason>` in that section.
+
+**Never:** write code, assign IDs, or write a `## Brief check` verdict (a separate Reviewer does).
 
 1. Load the `caveman` skill and the `ponytail` skill (level `full`).
 2. Read AGENTS.md unless your harness already loaded it (harness.md, Rulebook loading). Read the plan row and pointers you were given, the sections of its source docs it needs (in a long doc, list headings first and read only those sections), the relevant active decisions (scan workflow/decisions/index.md or search the folder by topic), stack.md's E2E and Concurrency sections, workflow/commands/build.md §1, and the code the plan touches.
@@ -10,7 +16,6 @@ Role: Planner. Write one self-contained plan brief. Never write code or assign I
    - List hotspot changes you already know of under `### Hotspots`.
    - Fill in Tests per AGENTS.md §9 (usually none).
    - Fill in `Skills / tools to consult`: the domain skills in harness.md that the tasks need, by `SKILL.md` path, or `none`. Read a skill's `SKILL.md` before you plan around it.
-   - Never write the `## Brief check` section; a separate Reviewer does.
    - Put new questions, decisions and acceptance items under Proposed entries with local keys (`new-Q1`, `new-D1`, `new-A1`) and the default in use.
 4. Choose each of these, with a one-line reason in the plan:
 
@@ -29,6 +34,6 @@ Role: Planner. Write one self-contained plan brief. Never write code or assign I
 
 **ponytail:** `full`; `lite` only with a reason (e.g. the docs ask for a deliberately extensible API); never `ultra`.
 
-**model:** the Executor's starting point in build.md §1 (standard / medium, or fast / low for mechanical work with no logic). Propose higher only with a concrete reason from that table, written in the plan; `review: full` alone is not one.
+**model:** the Executor's starting point in build.md §1. Propose higher only with a concrete reason from that table, written in the plan; `review: full` alone is not one.
 
 5. Return ≤10 lines: goal, execution, review level, model, owns, scope, proposed entries.

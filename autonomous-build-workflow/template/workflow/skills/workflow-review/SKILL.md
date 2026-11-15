@@ -10,7 +10,7 @@ Read-only: lists findings, changes no code. Never pass a fix flag to a review to
 ## Inputs
 - **target:** a git range (`main..HEAD`), `uncommitted` (`git status` and `git diff HEAD`; read new files in full), or paths
 - **context:** the plan and its note (optional for ad hoc reviews)
-- **level:** `light` or `full` (workflow/commands/plan.md)
+- **level:** `light` or `full` (workflow/roles/planner.md)
 - **out:** where to write the merged table (a `## Review` section or an audit section file)
 - **focus** (deep pass only): the reason the first pass was escalated. Review those parts in depth. Keep the first pass's rows (change a severity or status only with a reason), append new rows, and replace its verdict.
 

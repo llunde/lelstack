@@ -53,7 +53,7 @@ execute = sequential (default) | parallel-shared (sub-agents, one tree) | parall
 ```
 
 - **Memory lives on disk.** Plans, progress notes, questions, decisions and indexes in git are the only state. Any session can die at any moment and the next `build` rebuilds the picture from the repo.
-- **Roles:** a thin Orchestrator dispatches disposable Planners, Executors and Reviewers. Their context is thrown away and only files persist (AGENTS.md §5).
+- **Roles:** a thin Orchestrator dispatches disposable Planners, Executors and Reviewers (and Resolvers and Helpers when needed), each following its own file in `workflow/roles/`. Their context is thrown away and only files persist (AGENTS.md §5).
 - **One writer, one branch.** Every file has one owner at a time. Inside the loop, only the Orchestrator assigns IDs (exceptions: AGENTS.md §5 IDs), commits to the integration branch (default `main`) and pushes. Parallel units work on local branches that are never pushed.
 - **Humans are asynchronous.** The loop never waits. It logs questions with defaults, appends human checks to `acceptance.md`, and keeps going.
 - **The human does:** answer bootstrap questions, sign off on the docs, run `resolve`, run acceptance checks, and request new work through `intake` or `change`.
@@ -92,7 +92,8 @@ workflow/
   questions/Q-NNN-slug.md   one note per question
   audits/YYYY-MM-DD-<scope>/   section-*.md + report.md
   templates/                plan, progress, question, decision, audit, phase
-  commands/                 build (+ recover, integrate, plan), audit, resolve, intake, change, harness
+  commands/                 build (+ recover, integrate), audit, resolve, intake, change, harness
+  roles/                    planner, executor, reviewer, resolver, helper: one file per dispatched role
   skills/workflow-review/   SKILL.md: the combined review used by every review step
   skills/<name>/            domain skills copied from the skill library (§0), if any
 ```
@@ -136,7 +137,7 @@ The bootstrap agent loads the `caveman` skill once the preflight passes (AGENTS.
 
 ## 4. Template
 
-`template/` (next to this spec) holds the literal files bootstrap copies into a new repo. Copy them; never retype them. Placeholders in `<angle brackets>` are filled at bootstrap only in `AGENTS.md`, `workflow/stack.md`, `workflow/harness.md` and the D-001 index row (`<project>` in Stage A step 4, harness.md in step 5, the rest in Stage B). Placeholders in `workflow/templates/`, `workflow/commands/` and `workflow/skills/` stay: they're filled each time the file is used.
+`template/` (next to this spec) holds the literal files bootstrap copies into a new repo. Copy them; never retype them. Placeholders in `<angle brackets>` are filled at bootstrap only in `AGENTS.md`, `workflow/stack.md`, `workflow/harness.md` and the D-001 index row (`<project>` in Stage A step 4, harness.md in step 5, the rest in Stage B). Placeholders in `workflow/templates/`, `workflow/commands/`, `workflow/roles/` and `workflow/skills/` stay: they're filled each time the file is used.
 
 | File | What it is | Written by (in a project) |
 |---|---|---|
@@ -149,19 +150,19 @@ The bootstrap agent loads the `caveman` skill once the preflight passes (AGENTS.
 | `workflow/plans/index.md` · `workflow/questions/index.md` | plan, phase and in-flight tables · question table | Orchestrator, interactive commands |
 | `workflow/templates/plan.md` · `progress.md` · `question.md` · `audit.md` · `phase.md` | templates for plan briefs, progress and slice notes, questions, audit reports, phase docs | — |
 | `workflow/docs/out-of-scope.md` | fenced-off ideas and the "Pulled into scope" record | bootstrap Stage B, `intake`, `resolve` |
+| `workflow/roles/` | one file per dispatched role (planner, executor, reviewer, resolver, helper): brief inputs, what to load, what it may write, never, done, return | — |
 | `workflow/skills/workflow-review/SKILL.md` | the combined review used by every review and audit | — |
 | `workflow/retro.md` | evidence-backed observations and proposals | audits; `resolve` updates proposal status |
 
 ## 5. Commands
 
-All procedures are in `template/workflow/commands/`.
+All procedures are in `template/workflow/commands/`. What each dispatched role does is in `template/workflow/roles/`: the commands decide when to dispatch a role and at what tier and effort, and its role file says what it does.
 
 | Command | Purpose | Run by |
 |---|---|---|
 | `build.md` | the loop: dispatch rules, plan → execute → verify → review → close, phase end, stop conditions, IDs | the human (`build`), every session |
 | `recover.md` | resume from disk at every session start and after compaction | `build` |
 | `integrate.md` | rebase, resolve, check, review and merge one worktree unit | `build` |
-| `plan.md` | write one plan brief: execution modes, review levels, ponytail, model | Planner, dispatched by `build` |
 | `audit.md` | read-only phase / final / ad hoc audit, with retro | `build` at phase end, or the human |
 | `resolve.md` | settle questions with the human | the human (interactive) |
 | `intake.md` | add new scope as a phase | the human (interactive) |
@@ -170,7 +171,7 @@ All procedures are in `template/workflow/commands/`.
 
 ## 6. Harness bindings
 
-Bindings are the only workflow files besides `AGENTS.md` that live outside `workflow/`, because each harness looks for them in a fixed place. Keep them as thin pointers into `workflow/`.
+Bindings are the only workflow files besides `AGENTS.md` that live outside `workflow/`, because each harness looks for them in a fixed place. Keep them as thin pointers into `workflow/`. Roles need no per-harness agent definitions: every role is dispatched through the harness's general sub-agent with a brief that names its file in `workflow/roles/`, and the Orchestrator sets tier and effort on each dispatch.
 
 **Claude Code**
 - `CLAUDE.md` contains one line: `@AGENTS.md`.
@@ -215,7 +216,7 @@ Deny rules win over allow rules, so a force push stays blocked. Editing the perm
 - Invoke a command with the prompt "Follow workflow/commands/<name>.md.", or the harness's own custom-command mechanism if it has one (record which in its section). Codex reads AGENTS.md natively. If the harness has sub-agents, map the tiers to them. Otherwise use single-agent mode. Without native worktree isolation, the Orchestrator creates worktrees itself (harness.md); check that the harness lets sub-agents work in that location without permission prompts.
 
 **Single-agent mode** (no sub-agents, small context windows, local models)
-- `build` handles **one plan per session**, always `sequential`: run recover.md, write the plan (no brief check), implement it, verify, commit, then exit. The single agent is also the Orchestrator, so it writes real IDs directly instead of proposed entries. It keeps `caveman` on throughout, loads `ponytail` while planning and implementing, and turns `ponytail` off for the review pass. If the harness can clear context between writing and implementing the plan, do so. Disk carries everything over. Do the plan review after clearing context if possible; otherwise do it as a separate pass, following the Reviewer brief strictly.
+- `build` handles **one plan per session**, always `sequential`: run recover.md, write the plan (no brief check), implement it, verify, commit, then exit. The single agent is also the Orchestrator, so it writes real IDs directly instead of proposed entries. It keeps `caveman` on throughout, loads `ponytail` while planning and implementing, and turns `ponytail` off for the review pass. If the harness can clear context between writing and implementing the plan, do so. Disk carries everything over. Do the plan review after clearing context if possible; otherwise do it as a separate pass, following `workflow/roles/reviewer.md` strictly.
 - Restarting the agent after each session can be automated (§7, Automatic resume).
 - With small models, keep plans to about 5 tasks and give the strong tier to the best model available.
 
@@ -224,7 +225,7 @@ Deny rules win over allow rules, so a force push stays blocked. Editing the perm
 - **Automatic resume** (off by default). `build` is safe to re-run at any point (`workflow/commands/recover.md`), so a shell loop or a scheduled task can start it again after a usage reset, until it reports a stop condition other than "usage running low" or "session budget reached". Set it to `on` in harness.md; the Orchestrator's session budget then ends the session instead of compacting it. Leave it off until a few supervised runs look right: it spends quota unattended.
 - **Obsidian.** For a readable graph and a status view. Bootstrap sets it up when the human uses Obsidian (§3 Stage A step 6).
   - **Vault:** open `workflow/` as the vault, so it contains only workflow files. `workflow/.obsidian/` is gitignored: it's viewer preference, and Obsidian rewrites it constantly.
-  - **Config** (written by bootstrap; if Obsidian ignores it, set the same by hand in Settings): links in Markdown format with relative paths; excluded files `templates/`, `commands/`, `skills/`, `WORKFLOW.md`; graph colour groups by folder for `docs/`, `plans/`, `progress/`, `decisions/`, `questions/`, `audits/`.
+  - **Config** (written by bootstrap; if Obsidian ignores it, set the same by hand in Settings): links in Markdown format with relative paths; excluded files `templates/`, `commands/`, `roles/`, `skills/`, `WORKFLOW.md`; graph colour groups by folder for `docs/`, `plans/`, `progress/`, `decisions/`, `questions/`, `audits/`.
   - **Graph:** with the link policy (AGENTS.md §6 Links), the global graph shows overview → phases → plans → progress, with decisions and questions attached to the plans that use them. For navigating, use the local graph at depth 1–2 around one plan.
   - **Status:** `workflow/dashboard.base` (Obsidian Bases, a core plugin) with table views over frontmatter: plans by phase and status (`type: plan`), open questions (`type: question`, `status` not `resolved`), active decisions (`type: decision`), audits (`type: audit`). Dataview is an alternative if preferred. The plain indexes remain the contract for agents.
 - **Tier-2 tools** (off by default). List them in stack.md and enable them in harness.md. Examples:

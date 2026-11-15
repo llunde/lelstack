@@ -6,7 +6,7 @@ phase: <n>
 status: planned        # planned | in-progress | done | superseded
 mode: delegated        # delegated | interactive
 execution: sequential  # sequential | parallel-shared | parallel-worktree
-review: light          # full | light | skip (workflow/commands/plan.md)
+review: light          # full | light | skip (workflow/roles/planner.md)
 ponytail: full         # full | lite (AGENTS.md §6; never ultra)
 model: standard/medium # Executor tier/effort proposal; higher only with a reason (build.md §1)
 depends_on: []         # plan IDs that must be done first
@@ -41,7 +41,7 @@ completed:
 
 ## Execution and review
 <execution: one line on why. Parallel only if the slices own disjoint paths and the work is big enough to pay for coordinating it.>
-<review: full | light | skip — one line on why (workflow/commands/plan.md).>
+<review: full | light | skip — one line on why (workflow/roles/planner.md).>
 <ponytail: full, or lite with one line on why.>
 <model: Executor tier/effort, the build.md §1 starting point unless a concrete reason from that table; one line on why.>
 
