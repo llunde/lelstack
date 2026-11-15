@@ -22,26 +22,26 @@ The operating contract for building <project>. Read it in full at the start of e
 8. "Done" means proven (§8), never "the model believes it works".
 9. Every commit carries a workflow tag (§6). Untagged commits are drift and get adopted, never reverted.
 10. One writer per file. Every file has exactly one owner at a time: an active unit or the Orchestrator (§5). Inside the loop, only the Orchestrator assigns IDs (exceptions: §5 IDs), commits to the integration branch and pushes.
-11. The loop never changes its own rules on its own: AGENTS.md, workflow/commands/, workflow/skills/, WORKFLOW.md, review levels and required skills change only through a human decision (`resolve`, `intake`, `change`). Retro findings are proposals.
+11. The loop never changes its own rules on its own: AGENTS.md, workflow/commands/, workflow/roles/, workflow/skills/, WORKFLOW.md, review levels and required skills change only through a human decision (`resolve`, `intake`, `change`). Retro findings are proposals.
 
 ## 4. Project constraints
 <Filled at bootstrap: at most 15 non-negotiable rules from docs, e.g. "no network access", "one source of truth for X", "never lose user data". A change that seems to need breaking one is a question, not an exception.>
 
 ## 5. Roles
-| Role | Tier / effort (starting point; ladder and reasons: build.md §1) | Does | Never |
-|---|---|---|---|
-| Orchestrator | the session's model (harness.md) | picks next work, dispatches, light-verifies, integrates units, assigns IDs, keeps indexes, commits, pushes | reads docs/code broadly, implements (exception: bookkeeping, and one-line fixes with no logic) |
-| Planner | strong / medium; standard / medium for small or pattern-following plans | writes one self-contained plan brief, proposes questions and decisions | writes code, assigns IDs |
-| Executor | standard / medium | implements one plan or slice in its owned paths, writes only the tests the plan lists, ticks tasks, writes its note; on the fast path (build.md §2 step 2) also writes the short plan | commits to the integration branch, edits outside owned paths, assigns IDs |
-| Resolver | strong / medium | resolves a merge conflict between two units, keeping both intents | guesses when the intents contradict |
-| Helper | fast / low | failure triage; read-only gathering; returns facts and evidence (≤10 lines) | edits anything, decides, fixes |
-| Reviewer | standard / medium; strong / medium for `full` plans; strong / high for deep passes | checks a plan brief for blocking problems; runs the `workflow-review` skill on a plan's diff or an audit section; records findings | edits source; fixes findings; reviews code it wrote |
+| Role | Does | Defined in |
+|---|---|---|
+| Orchestrator | picks next work, dispatches, light-verifies, integrates units, assigns IDs, keeps indexes, commits, pushes. Never reads docs or code broadly, and never implements (exception: bookkeeping, and one-line fixes with no logic) | `workflow/commands/build.md` (with recover, integrate, audit) |
+| Planner | writes one self-contained plan brief, proposes questions and decisions | `workflow/roles/planner.md` |
+| Executor | implements one plan, slice or fix round in its owned paths, ticks tasks, writes its note | `workflow/roles/executor.md` |
+| Reviewer | checks a plan brief, reviews a diff or an audit section, records findings | `workflow/roles/reviewer.md` |
+| Resolver | resolves a merge conflict between two units, keeping both intents | `workflow/roles/resolver.md` |
+| Helper | failure triage and read-only gathering; returns facts, never decisions | `workflow/roles/helper.md` |
 
-Without sub-agents, one agent plays every role in sequence, one plan per session, always `sequential`.
+A dispatched role follows its role file: inputs, what to load, what it may write, what it never does, and what it returns. The Orchestrator's brief names the role file and gives only the inputs (build.md §1, Briefs). Without sub-agents, one agent plays every role in sequence, one plan per session, always `sequential`, following each role file in turn; as the Orchestrator it assigns IDs directly (IDs below), so the role files' "never assign IDs" doesn't apply.
 
-**Models.** Tiers `fast` / `standard` / `strong` map to models in `workflow/harness.md`; effort is `low`, `medium` or `high` (harness.md maps them to the harness's levels; nothing higher is used), ignored where the harness can't set it per dispatch. The Orchestrator picks both for every dispatch: cheapest fitting starting point, higher only with a stated reason (build.md §1). Helpers (fast / low) read a lot and return little: failure triage and read-only gathering, never decisions.
+**Models.** Tiers `fast` / `standard` / `strong` map to models in `workflow/harness.md`; effort is `low`, `medium` or `high` (harness.md maps them to the harness's levels; nothing higher is used), ignored where the harness can't set it per dispatch. The Orchestrator picks both for every dispatch: cheapest fitting starting point, higher only with a stated reason. Starting points and the escalation ladder: build.md §1.
 
-**Execution** (`sequential` by default, `parallel-shared`, `parallel-worktree`) is chosen per plan (workflow/commands/plan.md). A **unit** is a slice of a plan (`042-A`) or a whole plan (`042`); when units may run at the same time: build.md §1. Audit sections run in parallel by default.
+**Execution** (`sequential` by default, `parallel-shared`, `parallel-worktree`) is chosen per plan (workflow/roles/planner.md). A **unit** is a slice of a plan (`042-A`) or a whole plan (`042`); when units may run at the same time: build.md §1. Audit sections run in parallel by default.
 
 **One writer per file.**
 - Each unit declares the paths it owns (`owns:`). A worker edits only its owned paths and its own note. Needing anything else is a deviation it records, not an edit it makes.
@@ -54,8 +54,8 @@ Without sub-agents, one agent plays every role in sequence, one plan per session
 
 ## 6. Conventions
 - **Code:** boring, idiomatic, readable by a reviewer new to the stack. Surgical diffs: every changed line traces to a task. No speculative abstraction. Do handle failures that can really happen.
-- **Skills** are required (WORKFLOW.md §0). Load them through the harness, or by reading the `SKILL.md` path in harness.md. Domain skills in `workflow/skills/` are optional and loaded only for plans that name them (`Skills / tools to consult`): by the Executor, and by the Reviewer of a `review: full` plan or a deep pass.
-- **Simplicity (`ponytail`):** Planners, Executors and Resolvers load the `ponytail` skill at the start of every task, at the plan's `ponytail:` level (default `full`; `lite` only with a reason in the plan; never `ultra`).
+- **Skills** are required (WORKFLOW.md §0). Load them through the harness, or by reading the `SKILL.md` path in harness.md. Domain skills in `workflow/skills/` are optional and loaded only for plans that name them (`Skills / tools to consult`). Each role file (`workflow/roles/`) says which skills that role loads, and when.
+- **Simplicity (`ponytail`):** the roles that load it do so at the start of every task, at the plan's `ponytail:` level (default `full`; `lite` only with a reason in the plan; never `ultra`).
   - Precedence: docs and plan > this file (constraints §4, verification §7, done §8, tests §9) > ponytail. Ponytail decides **how** something is built, never **whether** a requirement in docs or the plan is built. If a requirement looks unnecessary, build the simplest version that meets it and propose a question.
   - Spec-silent details take the lazy option as the default in use, proposed as a question so the human can override it in `resolve`.
   - Its "when not to be lazy" list always applies (trust boundaries, data loss, security, accessibility).
@@ -68,7 +68,7 @@ Without sub-agents, one agent plays every role in sequence, one plan per session
   - Plain prose stays for what the human reads or acts on: `acceptance.md` steps, question notes, README, `workflow/docs/`, `complete.md`, code comments, commit messages. Questions to the human are always full sentences.
 - **Links in workflow files:** Markdown links (`[text](relative/path.md)`, never wikilinks). Prefer them for these edges, so the graph shows the project's structure:
   - overview → phase docs; a plan → its source (phase doc, question, audit report), the decisions it applies, the plans it `depends_on`; a progress note → its plan; a question or decision → its source; an audit report → its phase doc and the plans it spawned.
-  - Hubs (AGENTS.md, WORKFLOW.md, stack.md, harness.md, templates, commands, skills, `acceptance.md`, `retro.md`) are a backticked path or a plain ID. Only two rules are hard: **indexes contain no links**, only IDs and paths, and every link resolves.
+  - Hubs (AGENTS.md, WORKFLOW.md, stack.md, harness.md, templates, commands, roles, skills, `acceptance.md`, `retro.md`) are a backticked path or a plain ID. Only two rules are hard: **indexes contain no links**, only IDs and paths, and every link resolves.
 - **Comments:** minimal. Default to none: names and structure should explain the code.
   - Write one only for what the code can't say: why it's done this way, a non-obvious constraint or invariant (units, ordering, thread safety), a known limit (`shortcut: <limit>, <upgrade path>`), a workaround for an external bug (link the upstream issue), or a doc comment the stack's conventions require on a public API.
   - Keep it to one line where possible, three at most.
@@ -103,7 +103,7 @@ A failing `check` is an **environment problem until proven otherwise**: check st
 - [ ] docs current: README, stack.md and decisions updated if behavior, commands or settled facts changed
 - [ ] durable state: tasks ticked, progress note written (slice notes folded in), proposed entries turned into real IDs, index rows updated, tagged commit(s), worktrees and unit branches removed, integration branch pushed
 
-**Plan review level** (`review:`): chosen by the Planner (workflow/commands/plan.md); the Orchestrator may raise it, never lower it. Every review runs the `workflow-review` skill. Reviewers only report; the Orchestrator triages, and Executors fix.
+**Plan review level** (`review:`): chosen by the Planner (workflow/roles/planner.md); the Orchestrator may raise it, never lower it. Every review runs the `workflow-review` skill. Reviewers only report; the Orchestrator triages, and Executors fix.
 
 ## 9. Tests
 Coverage is deliberately traded for speed and signal. **Default: no new test.** Most plans add zero or one. A plan proves its acceptance criteria at the verification tier that fits (§7); often that's tier 2, which leaves no test behind.
@@ -128,4 +128,4 @@ Context that is read every session must stay small. When something goes over bud
 - Command output: scripts follow the quiet rule in stack.md. Don't paste full logs into notes or returns; quote the shortest decisive line.
 
 ## 11. Commands
-`build` (loop; uses `recover`, `integrate` and `plan`) · `audit` (phase / final / adhoc) · `resolve` (questions, interactive) · `intake` (new scope, interactive) · `change` (small change, interactive) · `harness` (add or switch an agent harness, interactive). The procedures are in `workflow/commands/`; how to invoke them is in `workflow/harness.md`.
+`build` (loop; uses `recover` and `integrate`, and dispatches the roles in `workflow/roles/`) · `audit` (phase / final / adhoc) · `resolve` (questions, interactive) · `intake` (new scope, interactive) · `change` (small change, interactive) · `harness` (add or switch an agent harness, interactive). The procedures are in `workflow/commands/`; how to invoke them is in `workflow/harness.md`.

@@ -26,7 +26,8 @@ questions/index.md        question table
 questions/Q-NNN-slug.md   one note per question
 audits/YYYY-MM-DD-<scope>/   section-*.md + report.md
 templates/                plan, progress, question, decision, audit, phase
-commands/                 build (+ recover, integrate, plan), audit, resolve, intake, change, harness
+commands/                 build (+ recover, integrate), audit, resolve, intake, change, harness
+roles/                    planner, executor, reviewer, resolver, helper: one file per dispatched role
 skills/workflow-review/   SKILL.md: the combined review used by every review step
 skills/<name>/            domain skills copied from the skill library at bootstrap or intake, if any
 ```

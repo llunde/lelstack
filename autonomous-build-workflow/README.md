@@ -115,26 +115,28 @@ Long-running agent work tends to fail in predictable ways: context filled up, wo
 
 ### The roles
 
-| Role | Does | Starting tier · effort |
-|---|---|---|
-| **Orchestrator** | Picks work, dispatches agents, verifies, integrates, commits, pushes | your session's model (strong · medium by default) |
-| **Planner** | Writes one self-contained plan brief | strong · medium; standard · medium for small or pattern-following plans |
-| **Executor** | Implements one plan or slice | standard · medium; fast · low for mechanical work; strong only with a reason |
-| **Reviewer** | Checks a plan brief for blockers; reviews a plan's changes, never its own code | standard · medium; strong · medium for high-risk plans; strong · high for deep passes |
-| **Resolver** | Resolves merge conflicts between parallel work | strong · medium |
-| **Helper** | Reads long logs or many files and returns a short summary | fast · low |
+| Role | Does |
+|---|---|
+| **Orchestrator** | Picks work, dispatches agents, verifies, integrates, commits, pushes |
+| **Planner** | Writes one self-contained plan brief |
+| **Executor** | Implements one plan or slice |
+| **Reviewer** | Checks a plan brief for blockers; reviews a plan's changes, never its own code |
+| **Resolver** | Resolves merge conflicts between parallel work |
+| **Helper** | Reads long logs or many files and returns a short summary |
 
-The Orchestrator picks the model and effort for each task. It starts at the cheapest setting that fits, goes higher only with a stated reason, and climbs one rung of a fixed ladder when a retry is needed.
+Each role the Orchestrator dispatches follows one file in `workflow/roles/`: what it gets, what it loads, what it may write, what it never does and what it returns. The Orchestrator itself follows `workflow/commands/build.md`. To change what a role does, edit its role file. To change when it runs or at which tier, edit `build.md` (§1 holds the tiers). The roles work the same in every harness: no per-harness agent definitions are needed.
+
+The Orchestrator picks the model and effort for each task. It starts at the cheapest setting that fits, goes higher only with a stated reason, and climbs one rung of a fixed ladder when a retry is needed. The starting points and the ladder are in [`build.md` §1](template/workflow/commands/build.md#1-dispatch-rules).
 
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"fontFamily": "-apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "15px", "primaryColor": "#EEF2FF", "primaryBorderColor": "#6366F1", "primaryTextColor": "#1E1B4B", "lineColor": "#7C8DA6", "clusterBkg": "#F8FAFC", "clusterBorder": "#CBD5E1", "edgeLabelBackground": "#FFFFFF", "tertiaryColor": "#F8FAFC"}}}%%
 flowchart LR
     O(("🎯<br/>Orchestrator"))
-    PL["📝 Planner<br/><small>strong · medium<br/>standard when pattern-following</small>"]
-    EX["🛠 Executor<br/><small>standard · medium<br/>strong with a reason · fast when mechanical</small>"]
-    RV["🔍 Reviewer<br/><small>standard · medium<br/>strong for full review or deep pass</small>"]
-    RS["🔀 Resolver<br/><small>strong · medium</small>"]
-    HP["📋 Helper<br/><small>fast · low</small>"]
+    PL["📝 Planner"]
+    EX["🛠 Executor"]
+    RV["🔍 Reviewer"]
+    RS["🔀 Resolver"]
+    HP["📋 Helper"]
     FS[("workflow/<br/><small>files in git</small>")]
     O -->|plan this| PL
     O -->|build this| EX
@@ -234,6 +236,7 @@ workflow/
   stack.md           how to build, test and run this project
   harness.md         agent and model setup per harness
   commands/ …        the procedures the agents follow
+  roles/ …           what each dispatched agent does: planner, executor, reviewer, resolver, helper
 ```
 
 ---
@@ -371,7 +374,7 @@ gitGraph
 
 ### Costs and limits
 
-- Every dispatch starts at the cheapest model and effort that fits (fast tier for log triage and mechanical edits, standard tier at medium effort for most building and reviewing; nothing above strong at high effort). Going higher needs a stated reason, which lands in the progress note, and each audit's retro counts the model mix so you can tune the starting points.
+- Every dispatch starts at the cheapest model and effort that fits ([`build.md` §1](template/workflow/commands/build.md#1-dispatch-rules) has the starting points). Going higher needs a stated reason, which lands in the progress note, and each audit's retro counts the model mix so you can tune the starting points.
 - Scripts are quiet: a passing `check` prints one line, not a full test log.
 - The Orchestrator keeps its own context small and, after a context compaction, re-reads the state from disk instead of trusting its memory.
 - **Automatic resume** (off by default): a shell loop or scheduled task can restart `/build` after each usage reset. Turn it on in `workflow/harness.md` once a few supervised runs look right. It spends quota while you're away.
