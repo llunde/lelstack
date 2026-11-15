@@ -28,4 +28,5 @@ audits/YYYY-MM-DD-<scope>/   section-*.md + report.md
 templates/                plan, progress, question, decision, audit, phase
 commands/                 build (+ recover, integrate, plan), audit, resolve, intake, change, harness
 skills/workflow-review/   SKILL.md: the combined review used by every review step
+skills/<name>/            domain skills copied from the skill library at bootstrap or intake, if any
 ```

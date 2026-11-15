@@ -11,7 +11,8 @@ Agent-platform specifics; the rest of the workflow is harness-neutral. Every age
 | Automatic resume | off · on (WORKFLOW.md §7) |
 | Orchestrator session budget | <after each phase audit, or after 6 closed plans (build.md, Session budget)> |
 | Tier-2 tools enabled | none |
-| Skills / plugins (guidance only) | <name → role / phase that uses it> |
+| Skills / plugins (guidance only) | <name → role / phase that uses it; domain skills: `workflow/skills/<name>/` (WORKFLOW.md §0) · none> |
+| Skill library | <path read at bootstrap, for `intake` · none> |
 | Required integrations | <none · per tool integration a phase can't work without (e.g. an MCP server): name → phases and roles; how to confirm its tools are reachable; recovery steps if not (recover.md step 0, build.md §4)> |
 
 ## <Harness, e.g. Claude Code>
@@ -36,6 +37,7 @@ Added YYYY-MM-DD by <bootstrap | harness>.
 | ponytail | present | <path> |
 | ponytail-review | present | <path> |
 | workflow-review | in repo | workflow/skills/workflow-review/SKILL.md |
+| <domain skill, if any> | in repo | workflow/skills/<name>/SKILL.md |
 
 ## <Next harness, same rows>
 
