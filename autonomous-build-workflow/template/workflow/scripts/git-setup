@@ -40,9 +40,11 @@ if [ $# -ge 1 ]; then
   # A fresh clone of the app: bring the workflow files in from the remote.
   # checkout-index without -f never overwrites a file that already exists here.
   if ! $W rev-parse -q --verify HEAD >/dev/null && $W rev-parse -q --verify origin/main >/dev/null; then
-    $W reset -q origin/main
+    $W symbolic-ref HEAD refs/heads/main
+    $W update-ref refs/heads/main origin/main
     $W branch -q --set-upstream-to=origin/main main
-    $W checkout-index -a
+    $W reset -q
+    $W checkout-index -a || echo "git-setup: kept the local files above; they show as modified in the workflow repo" >&2
   fi
 fi
 
