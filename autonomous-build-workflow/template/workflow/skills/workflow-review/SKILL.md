@@ -8,7 +8,7 @@ description: Combined code review used by this repo's workflow. Runs the harness
 Read-only: lists findings, changes no code. Never pass a fix flag to a review tool.
 
 ## Inputs
-- **target:** a git range (`main..HEAD`), `uncommitted` (`git status` and `git diff HEAD`; read new files in full), or paths
+- **target:** a git range (`main..HEAD`, optionally limited with `-- <paths>`), `uncommitted` (`git status` and `git diff HEAD`; read new files in full), or paths
 - **context:** the plan and its note (optional for ad hoc reviews)
 - **level:** `light` or `full` (workflow/roles/planner.md)
 - **out:** where to write the merged table (a `## Review` section or an audit section file)
@@ -17,7 +17,7 @@ Read-only: lists findings, changes no code. Never pass a fix flag to a review to
 A review that dies is simply run again. Only the merged result is written.
 
 ## 1. Run both lenses on the same target
-Start each lens as a skill or command call (WORKFLOW.md §0, Loading a skill). On a harness with a skill mechanism, reading a lens's `SKILL.md` and doing its job yourself is not that lens, however small the target. Run them in parallel when the harness allows; both are read-only.
+Start each lens as a skill or command call (AGENTS.md §6 Skills). On a harness with a skill mechanism, reading a lens's `SKILL.md` and doing its job yourself is not that lens, however small the target. Run them in parallel when the harness allows; both are read-only.
 - **Correctness:** the built-in review named in workflow/harness.md, on the target. Effort `low` for `light`, `medium` for `full`, `high` for a deep pass (a **focus** is given). Only if harness.md says `fallback`, or the call fails or never finishes, run the fallback bug hunt below instead, in a fresh sub-agent where possible, and record why on the `Lenses:` line (§4). A call whose result shows it reviewed a different target, or nothing, counts as failed.
 - **Quality and lean:** `ponytail-review` on the target. It's required, so it is always available and has no fallback.
 

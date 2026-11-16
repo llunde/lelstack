@@ -86,7 +86,7 @@ workflow/
   plans/NNN-slug.md         one brief per plan
   progress/NNN-slug.md      one completion record per plan
   progress/NNN-slug.X.md    slice note (parallel slices only; folded into the plan's note at close)
-  progress/complete.md      completion summary, written when the final audit is clean
+  progress/complete.md      completion summary, written after the final audit
   questions/index.md        question table
   questions/Q-NNN-slug.md   one note per question
   audits/YYYY-MM-DD-<scope>/   section-*.md + report.md
@@ -147,6 +147,7 @@ The bootstrap agent loads the `caveman` skill once the preflight passes (AGENTS.
    - **Probe** the environment (which tools exist, which versions) rather than assuming, then write `workflow/stack.md`, including the E2E, Git and Concurrency sections (the outermost headless layer and smoke flows, integration branch, remote, conflict hotspots for this stack, worktree setup).
    - If `check` can't run here at all, declare **static-only mode** in stack.md. The human must accept it explicitly at sign-off.
    - Select domain skills from the skill library (§0) and copy them in. Choose skills or plugins and record them in harness.md, including any required integration a phase can't work without (how to confirm it, and recovery steps if it's missing). List any tier-2 tools in stack.md and enable them in harness.md.
+   - Add the stack's own commands (dependency install, worktree setup, the native build, test and run commands) to this harness's permission config (§6, Permissions baseline) now, while the human is here to approve the edit.
 5. Fill in AGENTS.md §1, §4 and §6.
 6. Seed `workflow/plans/index.md` with one row per phase and one `planned` row per Scope-In bullet of phase 1, in build order, starting with `001 Walking skeleton`. Later phases get their rows when they start (build.md §2 step 1). Briefs are written just in time.
 7. **Sign-off gate.** Show the human a summary of one page or less: phases, stack and why, constraints, selected domain skills (with any `stale` mark) and required integrations, environment capabilities (and static-only mode if it applies), and open questions with their defaults. Apply corrections. When approved, save `docs: project definition (bootstrap)` (AGENTS.md §6 Commits), then run `build`.
@@ -233,7 +234,7 @@ Claude Code: `.claude/settings.json` (tracked in the workflow repo; the copy is 
   }
 }
 ```
-Deny rules win over allow rules, so a force push stays blocked. Editing the permission file itself always asks, so an agent can't loosen its own baseline; `harness` runs with you present. Delete slice notes with `git --git-dir=.git/workflow rm`. Add the worktree location to `permissions.additionalDirectories` if it's outside the repo, and `Bash(<main checkout>/workflow/scripts/*)` so worktree units can run the scripts by absolute path. Rule syntax changes between versions: check it against the Claude Code permissions docs, and confirm with one allowed and one denied command.
+Deny rules win over allow rules, so a force push stays blocked. Editing the permission file itself always asks, so an agent can't loosen its own baseline; `harness` runs with you present. Add the worktree location to `permissions.additionalDirectories` if it's outside the repo, and `Bash(<main checkout>/workflow/scripts/*)` so worktree units can run the scripts by absolute path. Rule syntax changes between versions: check it against the Claude Code permissions docs, and confirm with one allowed and one denied command.
 
 **Harnesses that read `AGENTS.md` natively, or any other harness**
 - Invoke a command with the prompt "Follow workflow/commands/<name>.md.", or the harness's own custom-command mechanism if it has one (record which in its section). Codex reads AGENTS.md natively. If the harness has sub-agents, map the tiers to them. Otherwise use single-agent mode. Without native worktree isolation, the Orchestrator creates worktrees itself (harness.md); check that the harness lets sub-agents work in that location without permission prompts.

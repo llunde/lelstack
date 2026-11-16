@@ -21,7 +21,7 @@ plans/index.md            plan + phase status table
 plans/NNN-slug.md         one brief per plan
 progress/NNN-slug.md      one completion record per plan
 progress/NNN-slug.X.md    slice note (parallel slices only; folded into the plan's note at close)
-progress/complete.md      completion summary, written when the final audit is clean
+progress/complete.md      completion summary, written after the final audit
 questions/index.md        question table
 questions/Q-NNN-slug.md   one note per question
 audits/YYYY-MM-DD-<scope>/   section-*.md + report.md

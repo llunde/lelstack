@@ -307,10 +307,11 @@ flowchart LR
 
 | Stop | What to do |
 |---|---|
-| **Final audit clean** | Done. A summary is in `workflow/progress/complete.md`. Use `/intake` or `/change` for more. |
+| **Final audit done** | Done. A summary is in `workflow/progress/complete.md`. Use `/intake` or `/change` for more. |
 | **Nothing actionable** | Everything left waits on you: run `/resolve`, or do the blocking acceptance checks. |
 | **Usage or context running low** | Wait for your limits to reset, then `/build` again. |
 | **Missing requirement** | Install the skill it names, then `/build`. |
+| **Environment broken** | The toolchain or dependencies are missing or broken on this machine. Fix what it names, then `/build`. |
 | **Unknown harness** | You opened the project in a harness that isn't set up yet. Run `/harness` from it. |
 | **Session budget reached** | Only with automatic resume on: the loop starts a fresh session by itself. |
 
