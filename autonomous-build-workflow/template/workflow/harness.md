@@ -31,13 +31,13 @@ Added YYYY-MM-DD by <bootstrap | harness>.
 | Context reset | <how the Orchestrator compacts or clears its own context · none> |
 | Permissions | <baseline applied (WORKFLOW.md §6): where, e.g. `.claude/settings.json`; confirmed with one allowed and one denied command> |
 
-| Skill | Status | SKILL.md path |
-|---|---|---|
-| caveman | present | <path> |
-| ponytail | present | <path> |
-| ponytail-review | present | <path> |
-| workflow-review | in repo | workflow/skills/workflow-review/SKILL.md |
-| <domain skill, if any> | in repo | workflow/skills/<name>/SKILL.md |
+| Skill | Status | SKILL.md path | Version |
+|---|---|---|---|
+| caveman | present | <path> | <commit, version or file date> |
+| ponytail | present | <path> | <...> |
+| ponytail-review | present | <path> | <...> |
+| workflow-review | in repo | workflow/skills/workflow-review/SKILL.md | |
+| <domain skill, if any> | in repo | workflow/skills/<name>/SKILL.md | |
 
 ## <Next harness, same rows>
 

@@ -36,9 +36,8 @@ Put every finding on one scale:
 | Source | Severity |
 |---|---|
 | built-in review | its own level, mapped to critical / high / medium / low |
-| ponytail Must fix | high (critical for data loss or a security hole) |
-| ponytail Should fix | medium |
-| ponytail Nice to have | low |
+| ponytail-review `yagni:`, `delete:`, `stdlib:`, `native:` | medium |
+| ponytail-review `shrink:` | low |
 | plan: unmet acceptance criterion, broken constraint | high |
 | plan: change outside scope or `owns:` | medium |
 | plan: comment rule broken (restates code, workflow reference, TODO, commented-out code) | low |
@@ -47,7 +46,7 @@ Put every finding on one scale:
 Then:
 - **Duplicates** (same location, same root cause): keep one, with the higher severity and every lens that found it.
 - **Missing-test findings** count only for critical logic, a user flow without its planned e2e test, or a recurring bug (AGENTS.md §9). Drop the rest.
-- **Lean findings** from ponytail's Should fix or Nice to have stay medium or low, except a structural one in code later plans will build on: a new abstraction with one implementation, an unneeded dependency, config nobody sets, or a speculative feature. That becomes high, because it's cheapest to remove now.
+- **Lean findings** from ponytail-review stay at the table's level, whatever their tag, except a structural one in code later plans will build on: a new abstraction with one implementation, an unneeded dependency, config nobody sets, or a speculative feature. That becomes high, because it's cheapest to remove now.
 - **Conflicts:** if a lean fix would remove something correctness depends on, keep the correctness view and note why.
 - **Every finding needs a concrete case** (this input or situation leads to this wrong result). Drop a finding only after re-reading the code and confirming it's wrong.
 - **Nits:** a low finding with no concrete case (wording, naming, small duplication, an unreachable branch) isn't a table row. List it on one `Nits:` line after the table. Nits aren't fixed in a fix round, collected by audits or planned. A broken plan rule from §2 is never a nit.

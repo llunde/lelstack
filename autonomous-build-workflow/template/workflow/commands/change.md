@@ -2,7 +2,7 @@
 
 The sanctioned path for quick fixes and tweaks, so that nothing lands outside the loop. If the request needs more than about one plan, changes a constraint, or adds a feature area, use `intake` instead.
 
-1. Load the `caveman` skill (questions to the human stay in full sentences). Read AGENTS.md and the code involved. Ask until the expected behavior is unambiguous.
+1. Load the `caveman` skill (questions to the human stay in full sentences). If the app repo's `git status` shows changes, or the plans index has an `in-progress` plan or "In flight" rows, stop and say "run `build` first": that is interrupted work, and this command's save would commit it. Read AGENTS.md and the code involved. Ask until the expected behavior is unambiguous.
 2. Write a short plan from the template (Context and Tasks can be brief; choose levels and fill in `Skills / tools to consult` per workflow/roles/planner.md steps 3–4), with `mode: interactive` and `source: change YYYY-MM-DD: <the request in one line>`. Add its index row.
 3. Load the `ponytail` skill (level `full` unless the human asks for `lite`) and every skill on the plan's `Skills / tools to consult` line, and implement, iterating with the human as needed. Follow the test rules in AGENTS.md §9: a bug fix gets a regression test only in a critical area or for a bug that came back.
 4. Pass the done gates in AGENTS.md §8, including the plan review at its level: dispatch a fresh Reviewer as in build.md §2 step 5 (in single-agent mode, a separate pass following workflow/roles/reviewer.md). The human can waive a `light` review. If the change alters behavior described in workflow/docs/ or in a decision, add a decision (D-NNN file and index row) that references it.
