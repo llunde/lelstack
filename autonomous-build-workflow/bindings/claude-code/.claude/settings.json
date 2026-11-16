@@ -30,6 +30,8 @@
       "Bash(git clean *)",
       "Bash(git stash --all*)",
       "Bash(git stash -a*)",
+      "Bash(git stash push --all*)",
+      "Bash(git stash push -a*)",
       "Bash(git --git-dir=.git/workflow push --force*)",
       "Bash(git --git-dir=.git/workflow push -f*)",
       "Bash(git --git-dir=.git/workflow reset --hard*)",

@@ -38,25 +38,30 @@ if [ $# -ge 1 ]; then
   $W remote get-url origin >/dev/null 2>&1 || $W remote add origin "$1"
   $W fetch -q origin
   # A fresh clone of the app: bring the workflow files in from the remote.
-  # checkout-index without -f never overwrites a file that already exists here.
+  # checkout-index without -f never overwrites a file that already exists here (this script, at least).
   if ! $W rev-parse -q --verify HEAD >/dev/null && $W rev-parse -q --verify origin/main >/dev/null; then
     $W symbolic-ref HEAD refs/heads/main
     $W update-ref refs/heads/main origin/main
     $W branch -q --set-upstream-to=origin/main main
     $W reset -q
-    $W checkout-index -a || echo "git-setup: kept the local files above; they show as modified in the workflow repo" >&2
+    $W checkout-index -a 2>/dev/null || true
+    if ! $W diff --quiet; then
+      echo "git-setup: kept local files that differ from the workflow remote:" >&2
+      $W diff --name-only >&2
+    fi
   fi
 fi
 
-# Never lose work: no workflow file may be ignored by both repos, or tracked by the app repo.
+# Never lose work: no workflow file may be tracked by the app repo. Ignored by both is only a warning,
+# since global excludes and the project .gitignore catch junk like .DS_Store too.
 paths=$(echo "$WORKFLOW_PATHS" | sed 's#^/##; s#/$##')
 local_only=$(echo "$LOCAL_ONLY" | sed 's#^/##')
 problems=0
 # shellcheck disable=SC2086 # paths are split on purpose
-for f in $($W status --porcelain --ignored=matching --untracked-files=normal -- $paths | sed -n 's/^!! //p'); do
+$W status -z --porcelain --ignored=matching --untracked-files=normal -- $paths | tr '\0' '\n' | sed -n 's/^!! //p' |
+while IFS= read -r f; do
   echo "$local_only" | grep -qxF "$f" && continue
-  echo "git-setup: $f is ignored by both repos (a .gitignore pattern matches it); tracked by neither" >&2
-  problems=1
+  echo "git-setup: warning: $f is ignored by both repos (a .gitignore or global excludes pattern); tracked by neither" >&2
 done
 # shellcheck disable=SC2086
 tracked=$(git ls-files -- $paths)
