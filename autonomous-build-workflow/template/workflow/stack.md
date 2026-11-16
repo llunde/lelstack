@@ -42,7 +42,6 @@ Scripts detect their environment (toolchain location, versions) themselves, and 
 
 ## Concurrency
 - Conflict hotspots (Orchestrator-only files): <e.g. *.csproj / *.sln, package.json + lockfile, Package.swift, DI registration, route table>
-- Concurrency-safe commands (allowed for `parallel-shared` workers): <none | e.g. a single test file run that writes no shared build output>
 - Worktree setup (run in a fresh worktree before work starts): <e.g. `<main checkout>/workflow/scripts/setup`; dependency install; isolated build output dir>
 
 ## Known environment symptoms

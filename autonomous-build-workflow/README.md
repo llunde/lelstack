@@ -183,12 +183,11 @@ flowchart TD
     subgraph EXEC["Execute"]
         direction LR
         S["One Executor<br/><small>sequential</small>"]
-        PS["Executors side by side<br/><small>parallel-shared · separate files</small>"]
         PW["One Executor per worktree<br/><small>parallel-worktree · local branches</small>"]
     end
-    X --> S & PS & PW
-    PW --> INT["🔀 Integrate each unit<br/><small>rebase · resolve · check · review · squash-merge</small>"]
-    S & PS --> V
+    X --> S & PW
+    PW --> INT["🔀 Integrate each unit<br/><small>merge main in · resolve · check · review · squash-merge</small>"]
+    S --> V
     INT --> V["✔ Verify<br/><small>check · definition of done</small>"]
     V --> R["🔍 Review<br/><small>code-review + ponytail-review + plan check<br/>deep pass only on escalation</small>"]
     R -->|critical / high,<br/>medium in own files| FX["Fix round<br/><small>one rung up for critical / high</small>"]
@@ -206,7 +205,7 @@ flowchart TD
     classDef done fill:#D1FAE5,stroke:#059669,stroke-width:2px,color:#064E3B
     classDef lead fill:#4F46E5,stroke:#312E81,stroke-width:2px,color:#FFFFFF
     linkStyle default stroke-width:2px
-    class PL,S,PS,PW,FX agent
+    class PL,S,PW,FX agent
     class INT git
     class V,R check
     class PA stop
@@ -354,7 +353,7 @@ flowchart TD
 
 ### Running in parallel
 
-Most plans run one at a time. When work splits cleanly (separate files, enough work in each part), the Orchestrator runs parts in parallel: either several agents in the same folder for small parts, or separate git worktrees for bigger ones. All merging happens locally, and only one branch (`main` by default) is ever pushed, so you get no pull requests and no extra branches on the remote. Each squash merge lands as one app commit with a plain message; the plan numbers in the graph below live only in the workflow repo.
+Most plans run one at a time. When work splits cleanly (separate files, enough work in each part), the Orchestrator runs parts in parallel, each in its own git worktree. All merging happens locally, and only one branch (`main` by default) is ever pushed, so you get no pull requests and no extra branches on the remote. Each squash merge lands as one app commit with a plain message; the plan numbers in the graph below live only in the workflow repo.
 
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"fontFamily": "-apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "git0": "#6366F1", "git1": "#F59E0B", "git2": "#10B981", "gitBranchLabel0": "#ffffff", "gitBranchLabel1": "#ffffff", "gitBranchLabel2": "#ffffff", "commitLabelColor": "#1E1B4B", "commitLabelBackground": "#EEF2FF", "lineColor": "#7C8DA6"}, "themeCSS": ".commit-label-bkg { opacity: 1 !important; }", "gitGraph": {"mainBranchName": "main", "showCommitLabel": true}}}%%

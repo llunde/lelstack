@@ -49,7 +49,7 @@ bootstrap A ─▶ description ─▶ bootstrap B (interview → docs → stack)
    ─▶ build: for each phase { plan → execute → verify → review → integrate → commit }* ─▶ phase audit ─▶ remediation ─▶ next phase
    ─▶ final audit ─▶ completion summary ─▶ maintenance (intake / change)
 
-execute = sequential (default) | parallel-shared (sub-agents, one tree) | parallel-worktree (local worktree + branch per unit)
+execute = sequential (default) | parallel-worktree (local worktree + branch per unit)
 ```
 
 - **Memory lives on disk.** Plans, progress notes, questions, decisions and indexes, saved in the workflow repo (§2 Git), are the only state. Any session can die at any moment and the next `build` rebuilds the picture from the repo.
@@ -182,7 +182,7 @@ All procedures are in `template/workflow/commands/`. What each dispatched role d
 |---|---|---|
 | `build.md` | the loop: dispatch rules, plan → execute → verify → review → close, phase end, stop conditions, IDs | the human (`build`), every session |
 | `recover.md` | resume from disk at every session start and after compaction | `build` |
-| `integrate.md` | rebase, resolve, check, review and merge one worktree unit | `build` |
+| `integrate.md` | merge the integration branch in, resolve, check, review and squash-merge one worktree unit | `build` |
 | `audit.md` | read-only phase / final / ad hoc audit, with retro | `build` at phase end, or the human |
 | `resolve.md` | settle questions with the human | the human (interactive) |
 | `intake.md` | add new scope as a phase | the human (interactive) |

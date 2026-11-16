@@ -41,12 +41,12 @@ A dispatched role follows its role file: inputs, what to load, what it may write
 
 **Models.** Tiers `fast` / `standard` / `strong` map to models in `workflow/harness.md`; effort is `low`, `medium` or `high` (harness.md maps them to the harness's levels; nothing higher is used), ignored where the harness can't set it per dispatch. The Orchestrator picks both for every dispatch: cheapest fitting starting point, higher only with a stated reason. Starting points and the escalation ladder: build.md §1.
 
-**Execution** (`sequential` by default, `parallel-shared`, `parallel-worktree`) is chosen per plan (workflow/roles/planner.md). A **unit** is a slice of a plan (`042-A`) or a whole plan (`042`); when units may run at the same time: build.md §1. Audit sections run in parallel by default.
+**Execution** (`sequential` by default, or `parallel-worktree`) is chosen per plan (workflow/roles/planner.md). A **unit** is a slice of a plan (`042-A`) or a whole plan (`042`); when units may run at the same time: build.md §1. Audit sections run in parallel by default.
 
 **One writer per file.**
 - Each unit declares the paths it owns (`owns:`). A worker edits only its owned paths and its own note. Needing anything else is a deviation it records, not an edit it makes.
 - The Orchestrator alone writes shared state: indexes, `acceptance.md`, plan status, and the conflict hotspots listed in stack.md (dependency manifests, lockfiles, project or solution files, DI registration, route tables, ...). Workers ask for hotspot changes under "Requested shared edits" in their note.
-- Task ticks: a `sequential` Executor in the main checkout ticks tasks in the plan file. A unit in a worktree or a parallel slice treats the plan file as read-only and ticks a `## Tasks` checklist in its own note: `workflow/progress/NNN-slug.<X>.md` for a slice, `workflow/progress/NNN-slug.md` for a whole plan.
+- Task ticks: a `sequential` Executor in the main checkout ticks tasks in the plan file. A unit in a worktree treats the plan file as read-only and ticks a `## Tasks` checklist in its own note: `workflow/progress/NNN-slug.<X>.md` for a slice, `workflow/progress/NNN-slug.md` for a whole plan.
 - Worktrees are checkouts of the app repo and hold no workflow files. Agents working in one read and write workflow files (this file, the plan, their note, scripts, skills) in the main checkout, by absolute path under the brief's `main:`.
 
 **IDs.** Inside the loop only the Orchestrator assigns IDs (plan and slice IDs at dispatch; others at close or integration). Bootstrap, `resolve`, `intake`, `change` and single-agent mode assign them directly, because they run alone. Planners and Executors write new questions, decisions and acceptance items under "Proposed entries" with a local key (`new-Q1`, `new-D1`, `new-A1`) and the default they build on, and never put local keys in code.

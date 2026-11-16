@@ -1,6 +1,6 @@
 # Plans
 
-Tables only, plain IDs and paths, no links. Status: planned | in-progress | done | superseded. Mode: delegated | interactive. Exec: sequential | parallel-shared | parallel-worktree. Order: rows with Pri `next` first, then lowest number in the current phase whose Deps are done.
+Tables only, plain IDs and paths, no links. Status: planned | in-progress | done | superseded. Mode: delegated | interactive. Exec: sequential | parallel-worktree. Order: rows with Pri `next` first, then lowest number in the current phase whose Deps are done.
 
 | # | Title | Phase | Status | Mode | Exec | Deps | Pri | Source | Progress |
 |---|---|---|---|---|---|---|---|---|---|

@@ -24,7 +24,6 @@ Role: Planner. Write one self-contained plan brief. The Orchestrator dispatches 
 | `execution` | Use when | Isolation |
 |---|---|---|
 | `sequential` | default; small work, or work where units touch the same files | none |
-| `parallel-shared` | small, clearly separate units that don't need to build or test on their own | one working tree. Workers run no git commands and nothing that writes build output, unless stack.md marks it concurrency-safe. The Orchestrator runs `check` once all units return |
 | `parallel-worktree` | two or more substantial units that each need to build and test on their own | one worktree and local branch per unit (harness.md) |
 
 **review** (the Orchestrator may raise it, never lower it):

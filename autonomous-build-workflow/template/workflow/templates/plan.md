@@ -5,7 +5,7 @@ title: <title>
 phase: <n>
 status: planned        # planned | in-progress | done | superseded
 mode: delegated        # delegated | interactive
-execution: sequential  # sequential | parallel-shared | parallel-worktree
+execution: sequential  # sequential | parallel-worktree
 review: light          # full | light | skip (workflow/roles/planner.md)
 ponytail: full         # full | lite (AGENTS.md §6; never ultra)
 model: standard/medium # Executor tier/effort proposal; higher only with a reason (build.md §1)
@@ -48,7 +48,7 @@ completed:
 ## Tasks
 - [ ] 1. <task> → verify: <how> (tier 1/2/3)
 <!-- Hotspot changes the plan already knows it needs go under "### Hotspots"; the Orchestrator applies them before dispatch.
-     parallel: "### Contract — owns: ..." first (lands before any slice starts), then
+     parallel-worktree: "### Contract — owns: ..." first (lands before any slice starts), then
      "### Slice A — owns: <paths>", "### Slice B — owns: <paths>". Hotspot changes a slice needs are listed under that slice for the Orchestrator to apply. -->
 
 ## Acceptance criteria

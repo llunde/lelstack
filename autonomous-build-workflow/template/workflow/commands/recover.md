@@ -13,9 +13,9 @@ Role: Orchestrator. Run at the start of every `build` session and after any cont
    - findings with Status exactly `open` → the fix round (build.md §2 step 5), one rung up if any of them is critical or high;
    - otherwise → Close (build.md §2 step 6).
 3. **In-flight units.** Compare the "In flight" table with `git worktree list` and local unit branches. For each unit:
-   - a worktree with a rebase in progress → `git rebase --abort`, then integrate from integrate.md step 1;
+   - a worktree with a merge in progress → `git merge --abort`, then integrate from integrate.md step 1;
    - finished (all tasks in its note ticked) but not integrated → integrate it from the first unfinished integrate.md step;
-   - partway through → dispatch a fresh Executor with `task: resume` to finish the remaining tasks: a worktree unit with `main:` and `mode: worktree <path>, branch <b>` from "In flight" (plus `slice <X>` for a slice), a shared-tree slice with its original `mode: slice <X>, owns: <paths>`;
+   - partway through → dispatch a fresh Executor with `task: resume` to finish the remaining tasks: a worktree unit with `main:` and `mode: worktree <path>, branch <b>` from "In flight" (plus `slice <X>` for a slice);
    - a worktree or branch with no row, or a row with no worktree or branch → if it holds commits not in the integration branch, treat it as partway through; otherwise remove it (`git worktree remove`, `git branch -D`, `git worktree prune`) and drop the row.
 4. **Unfinished audits.** An audit is finished only once its `(audit)` save exists in the workflow repo. For any other audit folder, resume at the first missing step, in audit.md order: section files, `section-cross-cutting.md`, `report.md`, plans (its "Plans spawned" section is empty), retro (its "Retro" section is empty), the commit.
 5. **Drift check.** Run `workflow/scripts/drift <integration branch>`: it lists the app commits that no `App-Commit:` trailer in the workflow repo names and no plan's `adopts:` lists. A session that died between the two commits of a save leaves one such commit; it is adopted like any other. If there are any, add a plan "Adopt off-loop changes" (`source: drift YYYY-MM-DD`) with Pri `next` that:
