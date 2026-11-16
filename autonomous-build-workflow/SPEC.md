@@ -95,6 +95,7 @@ workflow/
   roles/                    planner, executor, reviewer, resolver, helper: one file per dispatched role
   scripts/                  setup, check, check-full, run: quiet wrappers around the project's own commands (stack.md); workflow-only helpers
     git-setup               sets up the workflow repo and both ignore lists (Git below)
+    save, drift             the two-repo save (AGENTS.md §6 Commits) and the drift check (recover.md step 5)
   skills/workflow-review/   SKILL.md: the combined review used by every review step
   skills/<name>/            domain skills copied from the skill library (§0), if any
 ```
@@ -110,7 +111,7 @@ The project's repo holds only the application. A clone of it, its history and it
 - **App repo** (`.git`): the project's own repo, with its integration branch and remote (stack.md Git). It ignores every workflow path through `.git/info/exclude`, which is never committed, so the project's `.gitignore` stays free of workflow entries.
 - **Workflow repo** (`.git/workflow`): a second git directory whose working tree is the repo root. It tracks exactly the workflow paths: `workflow/`, `AGENTS.md`, and each harness's root files (§6). Run it from the repo root as `git --git-dir=.git/workflow <command>`. Living inside `.git/`, it is invisible in the working tree, can't be swept into an app commit, survives `git clean`, and is never copied by a clone of the app. Its remote is optional (stack.md Git, Workflow remote); set one to continue on another computer.
 - `workflow/scripts/git-setup` sets both up and is the single source of the path lists: the workflow paths, and the local-only paths inside them that neither repo tracks (`workflow/.logs/`, `workflow/.obsidian/`, a harness's worktree location and local settings). It is idempotent. It fails if the app repo tracks a workflow file, and warns about a workflow file ignored by both repos (a project `.gitignore` or global excludes pattern matches it, which is fine for junk like `.DS_Store`). Bootstrap and every `recover` run it; `harness` adds a harness's root files to its list.
-- **Saving** (AGENTS.md §6 Commits): app changes are committed to the app repo with a plain Conventional Commits message, then workflow changes to the workflow repo with the workflow's tagged subject and an `App-Commit: <sha>` trailer per app commit. The trailers are the only link between the two histories. App commits that no trailer names are drift (`recover`).
+- **Saving** (`workflow/scripts/save`, AGENTS.md §6 Commits): app changes are committed to the app repo with a plain Conventional Commits message, then workflow changes to the workflow repo with the workflow's tagged subject and an `App-Commit: <sha>` trailer per app commit. The trailers are the only link between the two histories. App commits that no trailer names are drift (`workflow/scripts/drift`, run by `recover`).
 - **Never** run `git clean -x`/`-X` or `git stash --all` in the app repo: they treat workflow files as ignored and remove them. If it happens, restore them from the workflow repo (`git --git-dir=.git/workflow checkout -- .`).
 - **Another computer:** clone the app, then from its root fetch the setup script and let it bring in the workflow files (it never overwrites an existing file):
   ```
