@@ -7,6 +7,8 @@
 *.swp
 
 # Local agent settings (the shared .claude/ bindings are committed)
+# Re-include .claude/ in case a global gitignore excludes it
+!**/.claude/
 .claude/settings.local.json
 .claude/worktrees/
 

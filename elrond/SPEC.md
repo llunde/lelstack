@@ -1,4 +1,4 @@
-# Autonomous Build Workflow
+# Elrond
 
 A template for building any software project with an LLM agent in a resumable **plan → implement → verify** loop. It is neutral about stack, platform and agent harness.
 
@@ -104,7 +104,7 @@ The bootstrap agent loads the `caveman` skill once the preflight passes (AGENTS.
 4. **Copy, don't retype.** Copy everything in `template/` into the repo root as is (`AGENTS.md` and `workflow/`), and copy this `SPEC.md` to `workflow/WORKFLOW.md`. Keep the files in `workflow/scripts/` executable (`chmod +x` if the copy dropped the bit). Then replace `<project>` with the project's name and delete the example row A-001 from `workflow/acceptance.md`. Leave the other placeholders for step 5 (harness.md) and Stage B (AGENTS.md §1, §4, §6, stack.md, the D-001 row); mark AGENTS.md's project sections `TBD (stage B)`.
 5. Fill in `workflow/harness.md` (§4): the shared settings, and this harness's section (`workflow/commands/harness.md` steps 3–5: model mapping, capability probe, Skills table, bindings from `bindings/<harness>/` and permissions).
 6. If the human uses Obsidian, set it up as in §7 (Obsidian): the `.obsidian/` config in `workflow/` and `workflow/dashboard.base`.
-7. Run `workflow/scripts/git-setup` (§2 Git; harness setup has already added this harness's root files and worktree location to its lists). Add a basic `.gitignore` for the project (build output, secrets; never workflow paths) and a stub `README.md`. Save (AGENTS.md §6 Commits): app commit `chore: initial commit`, workflow commit `chore: bootstrap autonomous-build-workflow (bootstrap)`. Then ask for the project description.
+7. Run `workflow/scripts/git-setup` (§2 Git; harness setup has already added this harness's root files and worktree location to its lists). Add a basic `.gitignore` for the project (build output, secrets; never workflow paths) and a stub `README.md`. Save (AGENTS.md §6 Commits): app commit `chore: initial commit`, workflow commit `chore: bootstrap elrond (bootstrap)`. Then ask for the project description.
 
 ### Stage B — project definition (on receiving the description)
 
