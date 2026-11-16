@@ -37,7 +37,7 @@ The operating contract for building <project>. Read it in full at the start of e
 | Resolver | resolves a merge conflict between two units, keeping both intents | `workflow/roles/resolver.md` |
 | Helper | failure triage and read-only gathering; returns facts, never decisions | `workflow/roles/helper.md` |
 
-A dispatched role follows its role file: inputs, what to load, what it may write, what it never does, and what it returns. The Orchestrator's brief names the role file and gives only the inputs (build.md §1, Briefs). Without sub-agents, one agent plays every role in sequence, one plan per session, always `sequential`, following each role file in turn; as the Orchestrator it assigns IDs directly (IDs below), so the role files' "never assign IDs" doesn't apply.
+A dispatched role follows its role file: inputs, what to load, what it may write, what it never does, and what it returns. The Orchestrator's brief names the role file and gives only the inputs (build.md §1, Briefs). Without sub-agents (single-agent mode, build.md §6), one agent plays every role in sequence, one plan per session, always `sequential`, following each role file in turn; as the Orchestrator it assigns IDs directly (IDs below), so the role files' "never assign IDs" doesn't apply.
 
 **Models.** Tiers `fast` / `standard` / `strong` map to models in `workflow/harness.md`; effort is `low`, `medium` or `high` (harness.md maps them to the harness's levels; nothing higher is used), ignored where the harness can't set it per dispatch. The Orchestrator picks both for every dispatch: cheapest fitting starting point, higher only with a stated reason. Starting points and the escalation ladder: build.md §1.
 

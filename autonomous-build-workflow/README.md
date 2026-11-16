@@ -312,6 +312,7 @@ flowchart LR
 | **Missing requirement** | Install the skill it names, then `/build`. |
 | **Environment broken** | The toolchain or dependencies are missing or broken on this machine. Fix what it names, then `/build`. |
 | **Unknown harness** | You opened the project in a harness that isn't set up yet. Run `/harness` from it. |
+| **Plan closed** | Only in single-agent mode (a harness without sub-agents): `/build` again for the next plan. |
 | **Session budget reached** | Only with automatic resume on: the loop starts a fresh session by itself. |
 
 If a session dies without a clean stop (crash, cutoff), just run `/build`. It resumes interrupted plans, reviews and merges from disk:

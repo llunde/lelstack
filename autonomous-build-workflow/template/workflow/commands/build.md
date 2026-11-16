@@ -70,6 +70,7 @@ Pick tier and effort for every dispatch. Every dispatch costs quota or money, so
 
 ## 4. Stop conditions
 - **Final audit done** (§3 step 4): write `workflow/progress/complete.md` (what was built, how to run it, pending acceptance items, open questions, any audit finding still open, and a pointer to workflow/retro.md "For the workflow"). The project is now in maintenance: new work comes only through `intake` or `change`.
+- **Plan closed** (single-agent mode only, §6): report one line; the next `build` takes the next plan.
 - **Session budget reached** (only with automatic resume on; see Session budget above): stop only between steps, with indexes and "In flight" consistent and any unit being integrated finished first. Report one line; the loop starts a fresh session.
 - **Unknown harness:** harness.md has no section for the harness you run in. Report it and say: "Run `harness` (Follow workflow/commands/harness.md) from this harness, then `build` again." Change nothing else.
 - **Integration unavailable:** a phase needs a required integration (harness.md) and its tools are missing. Change nothing else. Report which one and the recovery steps harness.md records for it, then say to run `build` again.
@@ -81,3 +82,14 @@ Otherwise, never stop to ask.
 
 ## 5. Turning proposed entries into real IDs
 For each `new-Q`, `new-D` and `new-A` key in a unit's plan or note, in order: take the next free ID of that type, write the question file, decision file or acceptance row from its template, add the index row, and replace the local key with the real ID in the plan or note. Only the Orchestrator does this inside the loop (exceptions: AGENTS.md §5 IDs), and only on the integration branch.
+
+## 6. Single-agent mode
+Applies when harness.md says this harness has no sub-agents. You play every role in turn (AGENTS.md §5): wherever a command says "dispatch", read that role's file and do the work yourself.
+- **One plan per session.** Run recover.md, then take one plan through Pick, Plan, Execute, Verify, Review and Close, always `sequential`. Then stop (§4, "Plan closed"). Finishing work that recover.md resumed counts as the session's plan.
+- **Plans:** no brief check. With a small model, keep a plan to about 5 tasks.
+- **IDs:** write real IDs directly instead of proposed entries.
+- **Skills:** `caveman` throughout; `ponytail` while planning and implementing, off for the review.
+- **Review:** a separate pass that follows workflow/roles/reviewer.md strictly. If the harness can clear your context (harness.md, Context reset), clear it after writing the plan and again before the review; disk carries everything over.
+- **No Helpers:** read a failing log yourself, the summary and the first failing lines only.
+- **No ladder:** you run at the session's setting. Where §1 says to escalate, retry once; a second failure becomes a remediation plan or a question.
+- **Audits:** one section per session, in audit.md order; recover.md step 4 resumes at the first missing step.

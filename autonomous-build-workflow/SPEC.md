@@ -241,13 +241,13 @@ Deny rules win over allow rules, so a force push stays blocked. Editing the perm
 - Invoke a command with the prompt "Follow workflow/commands/<name>.md.", or the harness's own custom-command mechanism if it has one (record which in its section). Codex reads AGENTS.md natively. If the harness has sub-agents, map the tiers to them. Otherwise use single-agent mode. Without native worktree isolation, the Orchestrator creates worktrees itself (harness.md); check that the harness lets sub-agents work in that location without permission prompts.
 
 **Single-agent mode** (no sub-agents, small context windows, local models)
-- `build` handles **one plan per session**, always `sequential`: run recover.md, write the plan (no brief check), implement it, verify, save, then exit. The single agent is also the Orchestrator, so it writes real IDs directly instead of proposed entries. It keeps `caveman` on throughout, loads `ponytail` while planning and implementing, and turns `ponytail` off for the review pass. If the harness can clear context between writing and implementing the plan, do so. Disk carries everything over. Do the plan review after clearing context if possible; otherwise do it as a separate pass, following `workflow/roles/reviewer.md` strictly.
+- The rules the agent follows are in `workflow/commands/build.md` §6: one plan per session, always `sequential`, no brief check, real IDs written directly, the review as a separate pass.
 - Restarting the agent after each session can be automated (§7, Automatic resume).
-- With small models, keep plans to about 5 tasks and give the strong tier to the best model available.
+- With small models, give the strong tier to the best model available.
 
 ## 7. Optional add-ons
 
-- **Automatic resume** (off by default). `build` is safe to re-run at any point (`workflow/commands/recover.md`), so a shell loop or a scheduled task can start it again after a usage reset, until it reports a stop condition other than "usage running low" or "session budget reached". Set it to `on` in harness.md; the Orchestrator's session budget then ends the session instead of compacting it. Leave it off until a few supervised runs look right: it spends quota unattended.
+- **Automatic resume** (off by default). `build` is safe to re-run at any point (`workflow/commands/recover.md`), so a shell loop or a scheduled task can start it again after a usage reset, until it reports a stop condition other than "usage running low", "session budget reached" or "plan closed". Set it to `on` in harness.md; the Orchestrator's session budget then ends the session instead of compacting it. Leave it off until a few supervised runs look right: it spends quota unattended.
 - **Obsidian.** For a readable graph and a status view. Bootstrap sets it up when the human uses Obsidian (§3 Stage A step 6).
   - **Vault:** open `workflow/` as the vault, so it contains only workflow files. `workflow/.obsidian/` is local-only (`workflow/scripts/git-setup`): it's viewer preference, and Obsidian rewrites it constantly.
   - **Config** (written by bootstrap; if Obsidian ignores it, set the same by hand in Settings): links in Markdown format with relative paths; excluded files `templates/`, `commands/`, `roles/`, `skills/`, `WORKFLOW.md`; graph colour groups by folder for `docs/`, `plans/`, `progress/`, `decisions/`, `questions/`, `audits/`.
