@@ -71,6 +71,8 @@ The workflow checks for them before it does anything else and stops if one is mi
 
 You also need git. Claude Code's built-in `/code-review` is used if it's available. Other harnesses fall back to a built-in review prompt.
 
+If your own user-level agent instructions say things like "never commit unless asked" or "plan first and wait for my go-ahead", add an exception there for this workflow's commands. The project's `AGENTS.md` declares one, but agents trust your own file more.
+
 Technology skills from [`../skills/`](../skills/) are optional and need no install. During the interview, bootstrap picks the ones that match your stack from their descriptions, copies them into `workflow/skills/` (pinned per project) and lists them in `workflow/harness.md`. Plans name the ones their Executor loads. If none match, nothing changes.
 
 ### 2. Bootstrap
@@ -78,7 +80,7 @@ Technology skills from [`../skills/`](../skills/) are optional and need no insta
 1. Create an empty folder for the project and open your agent harness there.
 2. Give the agent read access to this folder. In Claude Code, approve it when asked, or add it to `additionalDirectories`. Alternatively, copy this folder into the new repo first.
 3. Say: **"Bootstrap from `<path to this folder>/SPEC.md`"**
-4. Answer two quick questions: which harness you're in, and whether you view the workflow in Obsidian. Then confirm which of the harness's models map to the strong, standard and fast tiers.
+4. Say whether you view the workflow in Obsidian. Then confirm which of the harness's models map to the strong, standard and fast tiers.
 
 The agent checks the required skills, copies the workflow files into the repo, sets up your harness (commands, permissions), sets up git so the workflow's files stay out of your project's repo, and asks for the project description.
 
@@ -91,7 +93,7 @@ Paste a thorough description of what you want built. The agent then:
 3. Writes the overview, the phase docs and the out-of-scope list, chooses the stack (or uses yours), and probes the environment.
 4. Shows you a one-page summary: phases, stack, constraints, what it can and can't verify, open questions with their defaults.
 
-**Your sign-off here is the only approval gate.** After that, it builds on its own.
+**Your sign-off here is the only approval.** After that it builds on its own. The one thing that can hold a phase is a human-only check marked blocking (see [Your touchpoints](#your-touchpoints)).
 
 ### 4. Build
 
@@ -310,6 +312,7 @@ flowchart LR
 | **Nothing actionable** | Everything left waits on you: run `/resolve`, or do the blocking acceptance checks. |
 | **Usage or context running low** | Wait for your limits to reset, then `/build` again. |
 | **Missing requirement** | Install the skill it names, then `/build`. |
+| **Integration unavailable** | A tool integration the phase needs (e.g. an MCP server) isn't reachable. Follow the recovery steps it reports, then `/build`. |
 | **Environment broken** | The toolchain or dependencies are missing or broken on this machine. Fix what it names, then `/build`. |
 | **Unknown harness** | You opened the project in a harness that isn't set up yet. Run `/harness` from it. |
 | **Plan closed** | Only in single-agent mode (a harness without sub-agents): `/build` again for the next plan. |

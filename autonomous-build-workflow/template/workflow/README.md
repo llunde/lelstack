@@ -18,11 +18,13 @@ acceptance.md             human-only checks (A-NNN)
 retro.md                  evidence-backed observations and improvement proposals (written by audits)
 dashboard.base            Obsidian Bases status view (optional, WORKFLOW.md §7); .obsidian/ is local-only
 plans/index.md            plan + phase status table
+plans/archive.md          plan rows of closed phases
 plans/NNN-slug.md         one brief per plan
 progress/NNN-slug.md      one completion record per plan
 progress/NNN-slug.X.md    slice note (parallel slices only; folded into the plan's note at close)
 progress/complete.md      completion summary, written after the final audit
 questions/index.md        question table
+questions/archive.md      resolved question rows of closed phases
 questions/Q-NNN-slug.md   one note per question
 audits/YYYY-MM-DD-<scope>/   section-*.md + report.md
 templates/                plan, progress, question, decision, audit, phase

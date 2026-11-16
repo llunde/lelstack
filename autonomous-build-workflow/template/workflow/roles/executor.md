@@ -14,7 +14,7 @@ For `fast path`, the plan doesn't exist yet: load `caveman`, write the plan (Do)
 
 ## Do
 - `build`: implement the plan, or your slice of it, end to end. `contract`: only the tasks under the plan's `### Contract`, as `sequential` in the main checkout. `resume`: the same, from the first unticked task (the Orchestrator has already unticked what the diff doesn't support). `fix`: change only what the listed rows or specifics need, plus the `outside owns:` files they name; leave review Status cells alone.
-- `fast path`: first write the plan from workflow/templates/plan.md in short form (Goal, `owns:`, Tasks with verify steps, Acceptance; `review: skip`). If the work turns out to need a logic change, stop after writing the plan and return `not fast path`. Otherwise continue as `build`.
+- `fast path`: first write the plan from workflow/templates/plan.md in short form (Goal, `owns:`, Tasks with verify steps, Acceptance; `review: skip`). If the work turns out to need a logic change, or touches config that a high-risk area or an AGENTS.md §4 constraint depends on, stop after writing the plan and return `not fast path`. Otherwise continue as `build`.
 - Edit only paths in `owns:` (a slice: its own paths) and your own note. Needing anything else is a deviation you record, or a hotspot change under Requested shared edits (AGENTS.md §5).
 - Tick a task once its verify step passes: in the plan file for `sequential`; otherwise in a `## Tasks` checklist in your note, with the plan file read-only (AGENTS.md §5).
 - Write only the tests on the plan's `Tests:` line (AGENTS.md §9).

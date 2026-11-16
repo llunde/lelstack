@@ -23,7 +23,7 @@ Install the required skills at user level, for every harness that will run the l
 
 | Requirement | Used by | If missing |
 |---|---|---|
-| `caveman` skill ([source](https://github.com/JuliusBrussee/caveman)) | every role (AGENTS.md §6 Voice) | **required**: stop |
+| `caveman` skill ([source](https://github.com/JuliusBrussee/caveman)) | every role but the Helper (AGENTS.md §6 Voice) | **required**: stop |
 | `ponytail` skill ([source](https://github.com/DietrichGebert/ponytail)) | Planner, Executor, Resolver (AGENTS.md §6 Simplicity) | **required**: stop |
 | `ponytail-review` skill ([source](https://github.com/DietrichGebert/ponytail), same repo) | `workflow-review`, quality and lean lens | **required**: stop |
 | `workflow-review` skill | every review and audit | none: bootstrap copies it into the repo (`workflow/skills/workflow-review/`) |
@@ -67,37 +67,7 @@ AGENTS.md                   rulebook: how to build (read in full every session)
 CLAUDE.md, .claude/ ...     harness stubs and tool config only (§6), never workflow documents
 README.md                   the project's README: what it is, run locally, install/deploy (kept current)
 <project source, tests, CI, lint config ...>
-workflow/
-  README.md                 map of this folder: what each file is for and who writes it
-  WORKFLOW.md               copy of this spec (not read by `build`; `harness` reads §0 and §6)
-  docs/                     WHAT to build; changed only via intake or by the human
-    brief.md                the human's project description, verbatim, never edited
-    00-overview.md          vision, locked decisions, domain model, risks, phase list
-    NN-<phase>.md           one per phase, dependency order
-    out-of-scope.md         fenced-off ideas + "Pulled into scope" record
-  stack.md                  stack profile: commands, layout, environment
-  harness.md                agent platform: tiers→models, sub-agents, parallel cap
-  decisions/index.md        decision table
-  decisions/D-NNN-slug.md   one file per settled fact
-  acceptance.md             human-only checks (A-NNN)
-  retro.md                  evidence-backed observations and improvement proposals (written by audits)
-  dashboard.base            Obsidian Bases status view (optional, §7); .obsidian/ is local-only
-  plans/index.md            plan + phase status table
-  plans/NNN-slug.md         one brief per plan
-  progress/NNN-slug.md      one completion record per plan
-  progress/NNN-slug.X.md    slice note (parallel slices only; folded into the plan's note at close)
-  progress/complete.md      completion summary, written after the final audit
-  questions/index.md        question table
-  questions/Q-NNN-slug.md   one note per question
-  audits/YYYY-MM-DD-<scope>/   section-*.md + report.md
-  templates/                plan, progress, question, decision, audit, phase
-  commands/                 build (+ recover, integrate), audit, resolve, intake, change, harness
-  roles/                    planner, executor, reviewer, resolver, helper: one file per dispatched role
-  scripts/                  setup, check, check-full, run: quiet wrappers around the project's own commands (stack.md); workflow-only helpers
-    git-setup               sets up the workflow repo and both ignore lists (Git below)
-    save, drift             the two-repo save (AGENTS.md §6 Commits) and the drift check (recover.md step 5)
-  skills/workflow-review/   SKILL.md: the combined review used by every review step
-  skills/<name>/            domain skills copied from the skill library (§0), if any
+workflow/                   everything the workflow writes; its map is `template/workflow/README.md`
 ```
 
 **Layout rules**

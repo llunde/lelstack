@@ -39,7 +39,7 @@ The operating contract for building <project>. Read it in full at the start of e
 
 A dispatched role follows its role file: inputs, what to load, what it may write, what it never does, and what it returns. The Orchestrator's brief names the role file and gives only the inputs (build.md §1, Briefs). Without sub-agents (single-agent mode, build.md §6), one agent plays every role in sequence, one plan per session, always `sequential`, following each role file in turn; as the Orchestrator it assigns IDs directly (IDs below), so the role files' "never assign IDs" doesn't apply.
 
-**Models.** Tiers `fast` / `standard` / `strong` map to models in `workflow/harness.md`; effort is `low`, `medium` or `high` (harness.md maps them to the harness's levels; nothing higher is used), ignored where the harness can't set it per dispatch. The Orchestrator picks both for every dispatch: cheapest fitting starting point, higher only with a stated reason. Starting points and the escalation ladder: build.md §1.
+**Models.** Tiers `fast` / `standard` / `strong` and effort `low` / `medium` / `high` map to models and levels in `workflow/harness.md`; effort is ignored where the harness can't set it per dispatch. The Orchestrator picks both for every dispatch (build.md §1: starting points and the escalation ladder).
 
 **Execution** (`sequential` by default, or `parallel-worktree`) is chosen per plan (workflow/roles/planner.md). A **unit** is a slice of a plan (`042-A`) or a whole plan (`042`); when units may run at the same time: build.md §1. Audit sections run in parallel by default.
 
@@ -49,7 +49,7 @@ A dispatched role follows its role file: inputs, what to load, what it may write
 - Task ticks: a `sequential` Executor in the main checkout ticks tasks in the plan file. A unit in a worktree treats the plan file as read-only and ticks a `## Tasks` checklist in its own note: `workflow/progress/NNN-slug.<X>.md` for a slice, `workflow/progress/NNN-slug.md` for a whole plan.
 - Worktrees are checkouts of the app repo and hold no workflow files. Agents working in one read and write workflow files (this file, the plan, their note, scripts, skills) in the main checkout, by absolute path under the brief's `main:`.
 
-**IDs.** Inside the loop only the Orchestrator assigns IDs (plan and slice IDs at dispatch; others at close or integration). Bootstrap, `resolve`, `intake`, `change` and single-agent mode assign them directly, because they run alone. Planners and Executors write new questions, decisions and acceptance items under "Proposed entries" with a local key (`new-Q1`, `new-D1`, `new-A1`) and the default they build on, and never put local keys in code.
+**IDs.** Inside the loop only the Orchestrator assigns IDs (plan and slice IDs at dispatch; others at close or integration). Bootstrap, `resolve`, `intake`, `change` and single-agent mode assign them directly, because they run alone. Planners and Executors write new questions, decisions and acceptance items under "Proposed entries" with a local key (`new-Q1`, `new-D1`, `new-A1`) and the default they build on, and never put local keys in code. New IDs continue after the highest in the index and its `archive.md`.
 
 **Git.** Two repos share the working tree: the app repo (`.git`, integration branch in stack.md, default `main`) holds only the application; the workflow repo (`git --git-dir=.git/workflow`) holds `workflow/`, this file and the harness files. Only the Orchestrator commits to the integration branch and the workflow repo, and pushes. A worker in a worktree commits to its own unit branch only: checkpoints as it goes, and all of its work before it reports finished. Unit branches are never pushed.
 
@@ -63,7 +63,7 @@ A dispatched role follows its role file: inputs, what to load, what it may write
   - Plans, progress notes and other workflow files are requested output: write them in full, not as ponytail's three-line summary.
   - Mark a known limit with a `shortcut:` comment (not `ponytail:`, see Comments). If later plans or the expected load could reach it, also propose a decision.
 - **Structure:** keep correctness-critical logic in a pure, testable core. Put IO, platform and UI behind thin seams.
-- **Voice (`caveman`):** every role loads the `caveman` skill at its default level at the start of every session or task (never `ultra` or a wenyan level).
+- **Voice (`caveman`):** every role except the Helper and a brief check loads the `caveman` skill at its default level at the start of every session or task (never `ultra` or a wenyan level).
   - Applies to chat output, status lines and sub-agent returns. The Orchestrator reports one line per step, nothing between routine tool calls.
   - **Override of caveman's file exemption:** files written mainly for agents use the same terse voice: plans, progress and slice notes, decisions, review tables, audit section files and `report.md`, indexes.
   - Plain prose stays for what the human reads or acts on: `acceptance.md` steps, question notes, README, `workflow/docs/`, `complete.md`, code comments, commit messages. Questions to the human are always full sentences.
@@ -127,7 +127,7 @@ Never: tests for trivial code, accessors, constants, framework behavior or langu
 
 ## 10. Size budgets
 Context that is read every session must stay small. When something goes over budget, move the content elsewhere; don't compress it into a lossy summary.
-- This file: at most ~250 lines, rules only. Facts go in `workflow/decisions/`.
+- This file: at most ~3,500 words, rules only. Facts go in `workflow/decisions/`.
 - Indexes: tables only, no narrative, no links.
 - Plan brief: target about 100 lines. Inline constraints and acceptance criteria; link decisions by ID instead of restating them. Never drop a requirement, constraint or acceptance criterion to fit: an Executor that has to re-read the docs costs more context than a longer brief.
 - Progress note (and slice note): about 40 lines or less, not counting the `## Review` section. Decision file: about 10 lines of body or less.

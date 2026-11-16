@@ -4,11 +4,10 @@ id: NNN
 title: <title>
 phase: <n>
 status: planned        # planned | in-progress | done | superseded
-mode: delegated        # delegated | interactive
 execution: sequential  # sequential | parallel-worktree
 review: light          # full | light | skip (workflow/roles/planner.md)
 ponytail: full         # full | lite (AGENTS.md §6; never ultra)
-model: standard/medium # Executor tier/effort proposal; higher only with a reason (build.md §1)
+model: standard/medium # Executor tier/effort proposal; higher only with a reason (workflow/roles/planner.md)
 depends_on: []         # plan IDs that must be done first
 owns: []               # paths/globs this plan may edit (union of its slices)
 source: <workflow/docs/NN §x | Q-NNN | audit YYYY-MM-DD F<n> | A-NNN | change YYYY-MM-DD | drift YYYY-MM-DD | plan NNN review #n | plan NNN (partial close)>
@@ -43,7 +42,7 @@ completed:
 <execution: one line on why. Parallel only if the slices own disjoint paths and the work is big enough to pay for coordinating it.>
 <review: full | light | skip — one line on why (workflow/roles/planner.md).>
 <ponytail: full, or lite with one line on why.>
-<model: Executor tier/effort, the build.md §1 starting point unless a concrete reason from that table; one line on why.>
+<model: Executor tier/effort, the starting point in workflow/roles/planner.md unless it gives a concrete reason to go higher; one line on why.>
 
 ## Tasks
 - [ ] 1. <task> → verify: <how> (tier 1/2/3)
