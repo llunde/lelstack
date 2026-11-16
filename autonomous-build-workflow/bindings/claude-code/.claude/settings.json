@@ -2,8 +2,8 @@
   "effortLevel": "medium",
   "permissions": {
     "allow": [
-      "Bash(scripts/*)",
-      "Bash(./scripts/*)",
+      "Bash(workflow/scripts/*)",
+      "Bash(./workflow/scripts/*)",
       "Bash(git status)",
       "Bash(git status *)",
       "Bash(git diff *)",
@@ -19,6 +19,7 @@
       "Bash(git -C *)",
       "Bash(git push)",
       "Bash(git push *)",
+      "Bash(git --git-dir=.git/workflow *)",
       "Edit(./**)"
     ],
     "deny": [
@@ -27,6 +28,14 @@
       "Bash(git push --force-with-lease *)",
       "Bash(git reset --hard *)",
       "Bash(git clean *)",
+      "Bash(git stash --all*)",
+      "Bash(git stash -a*)",
+      "Bash(git stash push --all*)",
+      "Bash(git stash push -a*)",
+      "Bash(git --git-dir=.git/workflow push --force*)",
+      "Bash(git --git-dir=.git/workflow push -f*)",
+      "Bash(git --git-dir=.git/workflow reset --hard*)",
+      "Bash(git --git-dir=.git/workflow clean*)",
       "Bash(rm -rf *)",
       "Bash(sudo *)",
       "Read(~/.ssh/**)",

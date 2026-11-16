@@ -2,7 +2,7 @@
 
 A workflow for building software with AI coding agents that work on their own for long stretches. They plan, implement, verify and review in a loop, while you steer through a few clear touchpoints. It works with any stack, platform and agent harness: Claude Code, Codex, opencode and others.
 
-You give it a project description. It interviews you once, writes the project docs, sets up the stack, and then builds the project phase by phase. Everything it knows lives in files in the repo, so a session can stop at any moment (usage limits, crashes, closing the laptop) and pick up exactly where it left off.
+You give it a project description. It interviews you once, writes the project docs, sets up the stack, and then builds the project phase by phase. Everything it knows lives in files in the project folder, so a session can stop at any moment (usage limits, crashes, closing the laptop) and pick up exactly where it left off.
 
 - **Quick start:** [Apply it to a new project](#apply-it-to-a-new-project)
 - **How it works:** [Overview](#overview)
@@ -80,7 +80,7 @@ Technology skills from [`../skills/`](../skills/) are optional and need no insta
 3. Say: **"Bootstrap from `<path to this folder>/SPEC.md`"**
 4. Answer two quick questions: which harness you're in, and whether you view the workflow in Obsidian. Then confirm which of the harness's models map to the strong, standard and fast tiers.
 
-The agent checks the required skills, copies the workflow files into the repo, sets up your harness (commands, permissions), commits, and asks for the project description.
+The agent checks the required skills, copies the workflow files into the repo, sets up your harness (commands, permissions), sets up git so the workflow's files stay out of your project's repo, and asks for the project description.
 
 ### 3. Describe the project
 
@@ -107,7 +107,7 @@ That's it. The rest of this README explains what happens and how to steer it.
 
 Long-running agent work tends to fail in predictable ways: context filled up, work was lost when a session died, agents waited for answers nobody gave, bugs slipped through, and code grew bloated. This workflow is built around avoiding those failures:
 
-- **Disk is the only memory.** Plans, progress, questions and decisions are files in git. Any session can die and the next one rebuilds the picture from the repo.
+- **Disk is the only memory.** Plans, progress, questions and decisions are files, versioned in the workflow's own git repo. Any session can die and the next one rebuilds the picture from the repo.
 - **One thin coordinator, many disposable workers.** An *Orchestrator* picks the next work and hands it to short-lived agents that each do one job and are thrown away. The Orchestrator itself stays small and reads summaries, not code.
 - **It never waits for you.** When something is unclear, it logs a question with a sensible default and keeps going. You answer when it suits you, and work is reconciled if your answer differs from the default.
 - **"Done" means proven.** Every plan has to pass the project's checks, meet its acceptance criteria, and pass an independent review before it's committed.
@@ -137,7 +137,7 @@ flowchart LR
     RV["🔍 Reviewer"]
     RS["🔀 Resolver"]
     HP["📋 Helper"]
-    FS[("workflow/<br/><small>files in git</small>")]
+    FS[("workflow/<br/><small>files on disk</small>")]
     O -->|plan this| PL
     O -->|build this| EX
     O -->|review this| RV
@@ -216,14 +216,13 @@ flowchart TD
 
 At the end of each phase, an **audit** reviews the whole phase, turns findings into plans, and records evidence about how well the workflow itself performed (the *retro*). After the last phase, a **final audit** checks every promised feature, the README and shippability. Then the project is in maintenance.
 
-### What it puts in your repo
+### What it puts in your project
 
-Everything lives in one `workflow/` folder, so your project's own code stays uncluttered. Only `AGENTS.md` (the rulebook) and harness files like `CLAUDE.md` and `.claude/` sit at the root.
+Everything lives in one `workflow/` folder. Only `AGENTS.md` (the rulebook) and harness files like `CLAUDE.md` and `.claude/` sit at the root. None of it ends up in your project's git repo: see [Git: your repo stays clean](#git-your-repo-stays-clean).
 
 ```
 AGENTS.md            rules every agent follows
 CLAUDE.md, .claude/  harness bindings: commands, permissions
-scripts/             setup, check, check-full, run (your project's own scripts)
 workflow/
   docs/              what to build: your brief, overview, one doc per phase
   plans/             one brief per plan + index
@@ -237,6 +236,7 @@ workflow/
   harness.md         agent and model setup per harness
   commands/ …        the procedures the agents follow
   roles/ …           what each dispatched agent does: planner, executor, reviewer, resolver, helper
+  scripts/           setup, check, check-full, run: quiet wrappers around your project's own commands
 ```
 
 ---
@@ -256,7 +256,7 @@ workflow/
 
 Outside Claude Code, say "Follow workflow/commands/<name>.md" instead.
 
-**Don't commit to the repo outside these commands.** If you do, the next `/build` notices, adopts your changes and reviews them, but it's smoother to use `/change`.
+**Don't commit to the repo outside these commands.** If you do, the next `/build` notices (no workflow commit names yours), adopts your changes and reviews them, but it's smoother to use `/change`.
 
 ### Your touchpoints
 
@@ -348,12 +348,12 @@ flowchart TD
 
 - **Quick status:** `workflow/plans/index.md` (plans and phases) and `workflow/questions/index.md`.
 - **What was built:** the progress notes in `workflow/progress/`, one per plan.
-- **Git history:** one commit per plan (or per parallel slice), tagged `(plan NNN)`, `(audit)` and so on.
+- **Git history:** the workflow repo (`git --git-dir=.git/workflow log`) has one commit per plan (or per parallel slice), tagged `(plan NNN)`, `(audit)` and so on, each naming the app commit it made. Your project's history has plain commit messages only.
 - **Obsidian (optional):** open `workflow/` as a vault. You get a readable graph (overview → phases → plans → progress, with decisions and questions attached) and a status dashboard (`workflow/dashboard.base`).
 
 ### Running in parallel
 
-Most plans run one at a time. When work splits cleanly (separate files, enough work in each part), the Orchestrator runs parts in parallel: either several agents in the same folder for small parts, or separate git worktrees for bigger ones. All merging happens locally, and only one branch (`main` by default) is ever pushed, so you get no pull requests and no extra branches on the remote.
+Most plans run one at a time. When work splits cleanly (separate files, enough work in each part), the Orchestrator runs parts in parallel: either several agents in the same folder for small parts, or separate git worktrees for bigger ones. All merging happens locally, and only one branch (`main` by default) is ever pushed, so you get no pull requests and no extra branches on the remote. Each squash merge lands as one app commit with a plain message; the plan numbers in the graph below live only in the workflow repo.
 
 ```mermaid
 %%{init: {"theme": "base", "themeVariables": {"fontFamily": "-apple-system, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "git0": "#6366F1", "git1": "#F59E0B", "git2": "#10B981", "gitBranchLabel0": "#ffffff", "gitBranchLabel1": "#ffffff", "gitBranchLabel2": "#ffffff", "commitLabelColor": "#1E1B4B", "commitLabelBackground": "#EEF2FF", "lineColor": "#7C8DA6"}, "themeCSS": ".commit-label-bkg { opacity: 1 !important; }", "gitGraph": {"mainBranchName": "main", "showCommitLabel": true}}}%%
@@ -381,12 +381,22 @@ gitGraph
 
 ### Safety
 
-- Agents run with a permissions baseline: they can run the project's scripts, use git in the repo and edit files. Force pushes, hard resets, `rm -rf`, reading credentials and `sudo` are denied, and editing the permission file itself always asks.
+- Agents run with a permissions baseline: they can run the workflow's scripts, use git in both repos and edit files. Force pushes, hard resets, `git clean`, `git stash --all`, `rm -rf`, reading credentials and `sudo` are denied, and editing the permission file itself always asks.
 - The workflow never changes its own rules, review levels or required skills on its own. Improvements from the retro are proposals you approve or decline.
+
+### Git: your repo stays clean
+
+Your project's repo (`.git`) holds only the application. The workflow's files (`workflow/`, `AGENTS.md`, the harness files) are tracked by a second repo in the same folder, `.git/workflow`, and your repo ignores them through `.git/info/exclude`, which is never committed. So a clone of your repo, its history and its remote show no trace of the workflow: no workflow files, no `.gitignore` lines, no plan numbers in commit messages, no workflow branches.
+
+- **Link between the two:** each workflow commit carries an `App-Commit: <sha>` line for the app commit it made. An app commit nobody recorded is treated as a change made outside the loop: the next `/build` adopts and reviews it.
+- **Workflow history:** run git on it with `git --git-dir=.git/workflow <command>` from the project root, e.g. `log`, `status`, `diff`.
+- **One computer** is the default: the workflow repo has no remote, and its history lives in `.git/workflow`. Back up the folder if you care about the workflow history; your app still pushes to its own remote.
+- **Continue on another computer:** add a remote for the workflow repo once (`git --git-dir=.git/workflow remote add origin <url>`, then `git --git-dir=.git/workflow push -u origin main`, and add it to `workflow/stack.md` under Git so the loop pushes it). On the other computer, clone your app and run the three lines in [SPEC.md §2](SPEC.md#2-repository-layout) (Git, Another computer) from its root.
+- **Careful:** `git clean -x`, `git clean -X` and `git stash --all` treat the workflow files as ignored and remove them. Agents are denied these. If it happens, `git --git-dir=.git/workflow checkout -- .` restores the last saved state.
 
 ### Switching harness
 
-Open the project in the new harness, for example Codex, and run "Follow workflow/commands/harness.md". It checks the skills there, asks which models map to strong / standard / fast, probes what the harness can do, writes its bindings and permissions, and commits. From then on, `/build` (or its equivalent) works there too, and work in progress from the other harness is picked up normally.
+Open the project in the new harness, for example Codex, and run "Follow workflow/commands/harness.md". It checks the skills there, asks which models map to strong / standard / fast, probes what the harness can do, writes its bindings and permissions, and saves them to the workflow repo. From then on, `/build` (or its equivalent) works there too, and work in progress from the other harness is picked up normally.
 
 ### Improving the workflow
 

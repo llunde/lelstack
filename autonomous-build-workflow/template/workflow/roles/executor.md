@@ -6,6 +6,7 @@ Role: Executor. Implement one plan, one unit of it, or a list of fixes, inside t
 - `plan:` workflow/plans/NNN-slug.md (for `fast path`, the file to write, plus `row:` the plan index row)
 - `task:` `build` (default) · `fix: <review rows with their Fix column, or the specifics Verify or integrate found>` · `resume` · `fast path`
 - `mode:` `sequential` (default) · `slice <X>, owns: <paths>` (parallel-shared, one tree) · `worktree <path>, branch <b>`, or `worktree: harness-native` (a whole plan, or one slice with `slice <X>`)
+- worktree modes: `main:` the main checkout's absolute path. Your worktree has no workflow files: read AGENTS.md, the plan and skills, write your note, and run `workflow/scripts/` there, by absolute path under `main:` (AGENTS.md §5)
 - optional: `outside owns: <files>` (changed outside `owns:`, found by Verify), `integration: <name>`, and any line the Orchestrator adds (e.g. re-read AGENTS.md)
 
 ## Start
@@ -19,7 +20,7 @@ For `fast path`, the plan doesn't exist yet: load `caveman`, write the plan (Do)
 - Write only the tests on the plan's `Tests:` line (AGENTS.md §9).
 - Write your note from workflow/templates/progress.md as you go (`workflow/progress/NNN-slug.md`; a slice: `NNN-slug.<X>.md`), with new questions, decisions and acceptance items under Proposed entries (local keys, AGENTS.md §5 IDs) and hotspot changes under Requested shared edits.
 - Slice in a shared tree: run no git commands, and only the commands stack.md marks concurrency-safe.
-- Worktree: with `harness-native`, run stack.md's worktree setup first and report the path and branch. Commit to your unit branch only: checkpoints as you go, and all of your work before returning.
+- Worktree: with `harness-native`, run stack.md's worktree setup first and report the path and branch. Commit application files to your unit branch only: checkpoints as you go, and all of your work before returning. Your note stays in the main checkout, uncommitted; the Orchestrator saves it.
 - Any other mode: don't commit.
 
 ## Done

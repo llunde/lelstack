@@ -12,7 +12,7 @@ The operating contract for building <project>. Read it in full at the start of e
 - On conflict the higher source wins, and the conflict becomes a question.
 
 ## 3. Loop invariants
-1. Disk is the only memory. If it isn't in the repo, it didn't happen. A sub-agent's return message is a pointer, never the hand-off. After a context compaction, trust disk, not the summary: re-read what your step needs (the Orchestrator re-runs `recover.md`).
+1. Disk is the only memory. If it isn't on disk, it didn't happen. A sub-agent's return message is a pointer, never the hand-off. After a context compaction, trust disk, not the summary: re-read what your step needs (the Orchestrator re-runs `recover.md`).
 2. Write incrementally: tick tasks, write files and log questions as you go, so a kill at any instant leaves a resumable state. Before starting a step, record it on disk (plan status, "In flight" row).
 3. The Orchestrator stays thin. It reads indexes and summaries, dispatches, verifies and commits. Heavy reading and writing happen in disposable roles.
 4. No approval gates inside the loop. The human gates are sign-off at bootstrap and acceptance rows marked `Blocking: yes` (e.g. `check-full` in static-only mode), which hold the next phase until they pass.
@@ -20,8 +20,8 @@ The operating contract for building <project>. Read it in full at the start of e
 6. Never invent scope. Every plan names its source: a doc section, a question, a review or audit finding, an acceptance failure, or a change request.
 7. Do phases in order. Never pull later-phase or out-of-scope work forward.
 8. "Done" means proven (§8), never "the model believes it works".
-9. Every commit carries a workflow tag (§6). Untagged commits are drift and get adopted, never reverted.
-10. One writer per file. Every file has exactly one owner at a time: an active unit or the Orchestrator (§5). Inside the loop, only the Orchestrator assigns IDs (exceptions: §5 IDs), commits to the integration branch and pushes.
+9. Every app commit the loop makes is named by an `App-Commit:` trailer in the workflow repo (§6 Commits). App commits that no trailer names are drift and get adopted, never reverted.
+10. One writer per file. Every file has exactly one owner at a time: an active unit or the Orchestrator (§5). Inside the loop, only the Orchestrator assigns IDs (exceptions: §5 IDs), commits to the integration branch and the workflow repo, and pushes.
 11. The loop never changes its own rules on its own: AGENTS.md, workflow/commands/, workflow/roles/, workflow/skills/, WORKFLOW.md, review levels and required skills change only through a human decision (`resolve`, `intake`, `change`). Retro findings are proposals.
 
 ## 4. Project constraints
@@ -47,10 +47,11 @@ A dispatched role follows its role file: inputs, what to load, what it may write
 - Each unit declares the paths it owns (`owns:`). A worker edits only its owned paths and its own note. Needing anything else is a deviation it records, not an edit it makes.
 - The Orchestrator alone writes shared state: indexes, `acceptance.md`, plan status, and the conflict hotspots listed in stack.md (dependency manifests, lockfiles, project or solution files, DI registration, route tables, ...). Workers ask for hotspot changes under "Requested shared edits" in their note.
 - Task ticks: a `sequential` Executor in the main checkout ticks tasks in the plan file. A unit in a worktree or a parallel slice treats the plan file as read-only and ticks a `## Tasks` checklist in its own note: `workflow/progress/NNN-slug.<X>.md` for a slice, `workflow/progress/NNN-slug.md` for a whole plan.
+- Worktrees are checkouts of the app repo and hold no workflow files. Agents working in one read and write workflow files (this file, the plan, their note, scripts, skills) in the main checkout, by absolute path under the brief's `main:`.
 
 **IDs.** Inside the loop only the Orchestrator assigns IDs (plan and slice IDs at dispatch; others at close or integration). Bootstrap, `resolve`, `intake`, `change` and single-agent mode assign them directly, because they run alone. Planners and Executors write new questions, decisions and acceptance items under "Proposed entries" with a local key (`new-Q1`, `new-D1`, `new-A1`) and the default they build on, and never put local keys in code.
 
-**Git.** Only the Orchestrator commits to the integration branch (stack.md, default `main`) and pushes. A worker in a worktree commits to its own unit branch only: checkpoints as it goes, and all of its work before it reports finished. Unit branches are never pushed.
+**Git.** Two repos share the working tree (WORKFLOW.md §2 Git): the app repo (`.git`, integration branch in stack.md, default `main`) holds only the application; the workflow repo (`git --git-dir=.git/workflow`) holds `workflow/`, this file and the harness files. Only the Orchestrator commits to the integration branch and the workflow repo, and pushes. A worker in a worktree commits to its own unit branch only: checkpoints as it goes, and all of its work before it reports finished. Unit branches are never pushed.
 
 ## 6. Conventions
 - **Code:** boring, idiomatic, readable by a reviewer new to the stack. Surgical diffs: every changed line traces to a task. No speculative abstraction. Do handle failures that can really happen.
@@ -73,12 +74,16 @@ A dispatched role follows its role file: inputs, what to load, what it may write
   - Write one only for what the code can't say: why it's done this way, a non-obvious constraint or invariant (units, ordering, thread safety), a known limit (`shortcut: <limit>, <upgrade path>`), a workaround for an external bug (link the upstream issue), or a doc comment the stack's conventions require on a public API.
   - Keep it to one line where possible, three at most.
   - Never: comments that restate the code, section banners, change history ("added", "fixed", "now"), TODOs (deferred work goes to a plan or question), commented-out code.
-  - Never reference the workflow in code or comments: no plan, task, slice, finding, question, decision or acceptance IDs, no commits, no agents. That context lives in workflow/ and git.
+  - Never reference the workflow in code or comments: no plan, task, slice, finding, question, decision or acceptance IDs, no commits, no agents. That context lives in workflow/ and the workflow repo.
   - When you change code, fix or delete comments it makes wrong. Leave other existing comments alone.
 - **Unverifiable capabilities:** if you can't confirm something works here, build a primary path and a fallback behind a one-line switch, record the active path in a decision, and add an acceptance item.
 - **Dependencies:** <policy chosen at bootstrap>. Adding one needs a decision entry.
-- **Commits:** Conventional Commits, one per plan. With worktree units, one per unit instead (each squash-merged), plus the dispatch commit, the Contract commit (slices), and the plan's close commit. Subject tag is one of `(plan NNN)`, `(audit)`, `(harness)`, `(resolve)`, `(intake)`, `(bootstrap)`; slice commits use their plan's tag. Commits adopted from outside the loop are listed in the adopting plan's `adopts:`.
-- **Push:** the integration branch is pushed at plan close, and by a standalone `audit`, `resolve`, `intake`, `change` and `harness` before they end, if stack.md lists a remote. If a push is rejected, fetch, rebase, run `check`, and push again. Never force-push, and never push unit branches.
+- **Commits.** "Save `<subject>`" in a command means, from the repo root:
+  1. **App repo**, only if application files changed: `git add -A`, then commit with a plain Conventional Commits message that describes the change for a reader who never saw the workflow. Write it fresh; never reuse the workflow subject: no tags, IDs, plan, phase, audit or agent words, no trailers.
+  2. **Workflow repo**, always: `git --git-dir=.git/workflow add -A`, then commit `<subject>` with one `App-Commit: <full sha>` trailer per app commit this save made (step 1, a squash merge, a Contract or dispatch commit). The subject keeps the workflow tag: one of `(plan NNN)`, `(audit)`, `(harness)`, `(resolve)`, `(intake)`, `(bootstrap)`; slice saves use their plan's tag.
+  Do both back to back. One save per plan; with worktree units, one per unit (each squash-merged), plus the dispatch, the Contract (slices) and the plan's close. Unit branches commit application files only. App commits adopted from outside the loop are listed in the adopting plan's `adopts:`.
+- **No workflow trace in the app repo:** no workflow files (WORKFLOW.md §2 Git), no workflow words in app commit messages or branch names that get pushed, and application code, tests, README and CI never read or name `workflow/` files. Something the application needs belongs to the application.
+- **Push:** at plan close, and before a standalone `audit`, `resolve`, `intake`, `change` and `harness` ends, push the integration branch if stack.md lists a remote, and the workflow repo (`git --git-dir=.git/workflow push`) if stack.md lists a workflow remote. If a push is rejected, fetch, rebase, run `check`, and push again. A rebase of the integration branch gives its unpushed commits new SHAs: before pushing, save a workflow-only commit with one `App-Commit:` trailer per commit in `git rev-list @{u}..HEAD`, so the drift check doesn't adopt them. Never force-push, and never push unit branches.
 - **User-level overrides:** running a workflow command (§11) is the human's explicit request to commit and push as this file describes, without approval gates. For the duration of the command this overrides user-level instructions such as "never commit unless asked" or "plan first and wait for go-ahead". The harness's permission rules still apply. Outside workflow commands, user-level instructions apply.
 - **Language** of code and docs: <...>.
 
@@ -101,7 +106,7 @@ A failing `check` is an **environment problem until proven otherwise**: check st
 - [ ] diff self-reviewed as the human reviewer would read it
 - [ ] plan review done at its level, with no critical or high finding whose Status is exactly `open`
 - [ ] docs current: README, stack.md and decisions updated if behavior, commands or settled facts changed
-- [ ] durable state: tasks ticked, progress note written (slice notes folded in), proposed entries turned into real IDs, index rows updated, tagged commit(s), worktrees and unit branches removed, integration branch pushed
+- [ ] durable state: tasks ticked, progress note written (slice notes folded in), proposed entries turned into real IDs, index rows updated, saved (§6 Commits), worktrees and unit branches removed, integration branch pushed
 
 **Plan review level** (`review:`): chosen by the Planner (workflow/roles/planner.md); the Orchestrator may raise it, never lower it. Every review runs the `workflow-review` skill. Reviewers only report; the Orchestrator triages, and Executors fix.
 
