@@ -1,0 +1,30 @@
+#!/bin/sh
+# Drift check (recover.md): app commits that no App-Commit trailer in the workflow repo names
+# and no plan's `adopts:` lists. Run from the repo root of the main checkout.
+# Usage: workflow/scripts/drift [<integration branch>]   (default: the current branch)
+set -eu
+
+[ -d .git ] && [ -d .git/workflow ] || { echo "drift: run from the repo root of the main checkout" >&2; exit 1; }
+branch=${1:-$(git symbolic-ref --short HEAD)}
+
+named=$(mktemp)
+trap 'rm -f "$named"' EXIT
+{
+  git --git-dir=.git/workflow log --format='%(trailers:key=App-Commit,valueonly)' 2>/dev/null || true
+  cat workflow/plans/*.md 2>/dev/null | sed -n 's/^adopts:\([^#]*\).*/\1/p' | tr -c '0-9a-f\n' '\n'
+} | awk 'length($0) >= 7' > "$named"
+
+# Its own assignment: inside the pipeline a failing rev-list would report "none".
+revs=$(git rev-list "$branch")
+# A named SHA may be abbreviated (adopts:), so match by prefix.
+unnamed=$(echo "$revs" | awk -v f="$named" '
+  BEGIN { while ((getline l < f) > 0) n[l] = 1 }
+  { hit = 0; for (p in n) if (index($0, p) == 1) { hit = 1; break } if (!hit) print }')
+
+if [ -z "$unnamed" ]; then
+  echo "drift: none"
+else
+  echo "drift: $(echo "$unnamed" | wc -l | tr -d ' ') app commits no workflow commit names"
+  # shellcheck disable=SC2086 # one SHA per word on purpose
+  git log --no-walk --format='%h %s' $unnamed
+fi

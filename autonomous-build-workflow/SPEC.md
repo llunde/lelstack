@@ -23,7 +23,7 @@ Install the required skills at user level, for every harness that will run the l
 
 | Requirement | Used by | If missing |
 |---|---|---|
-| `caveman` skill ([source](https://github.com/JuliusBrussee/caveman)) | every role (AGENTS.md §6 Voice) | **required**: stop |
+| `caveman` skill ([source](https://github.com/JuliusBrussee/caveman)) | every role but the Helper (AGENTS.md §6 Voice) | **required**: stop |
 | `ponytail` skill ([source](https://github.com/DietrichGebert/ponytail)) | Planner, Executor, Resolver (AGENTS.md §6 Simplicity) | **required**: stop |
 | `ponytail-review` skill ([source](https://github.com/DietrichGebert/ponytail), same repo) | `workflow-review`, quality and lean lens | **required**: stop |
 | `workflow-review` skill | every review and audit | none: bootstrap copies it into the repo (`workflow/skills/workflow-review/`) |
@@ -49,7 +49,7 @@ bootstrap A ─▶ description ─▶ bootstrap B (interview → docs → stack)
    ─▶ build: for each phase { plan → execute → verify → review → integrate → commit }* ─▶ phase audit ─▶ remediation ─▶ next phase
    ─▶ final audit ─▶ completion summary ─▶ maintenance (intake / change)
 
-execute = sequential (default) | parallel-shared (sub-agents, one tree) | parallel-worktree (local worktree + branch per unit)
+execute = sequential (default) | parallel-worktree (local worktree + branch per unit)
 ```
 
 - **Memory lives on disk.** Plans, progress notes, questions, decisions and indexes, saved in the workflow repo (§2 Git), are the only state. Any session can die at any moment and the next `build` rebuilds the picture from the repo.
@@ -67,36 +67,7 @@ AGENTS.md                   rulebook: how to build (read in full every session)
 CLAUDE.md, .claude/ ...     harness stubs and tool config only (§6), never workflow documents
 README.md                   the project's README: what it is, run locally, install/deploy (kept current)
 <project source, tests, CI, lint config ...>
-workflow/
-  README.md                 map of this folder: what each file is for and who writes it
-  WORKFLOW.md               copy of this spec (not read by `build`; `harness` reads §0 and §6)
-  docs/                     WHAT to build; changed only via intake or by the human
-    brief.md                the human's project description, verbatim, never edited
-    00-overview.md          vision, locked decisions, domain model, risks, phase list
-    NN-<phase>.md           one per phase, dependency order
-    out-of-scope.md         fenced-off ideas + "Pulled into scope" record
-  stack.md                  stack profile: commands, layout, environment
-  harness.md                agent platform: tiers→models, sub-agents, parallel cap
-  decisions/index.md        decision table
-  decisions/D-NNN-slug.md   one file per settled fact
-  acceptance.md             human-only checks (A-NNN)
-  retro.md                  evidence-backed observations and improvement proposals (written by audits)
-  dashboard.base            Obsidian Bases status view (optional, §7); .obsidian/ is local-only
-  plans/index.md            plan + phase status table
-  plans/NNN-slug.md         one brief per plan
-  progress/NNN-slug.md      one completion record per plan
-  progress/NNN-slug.X.md    slice note (parallel slices only; folded into the plan's note at close)
-  progress/complete.md      completion summary, written when the final audit is clean
-  questions/index.md        question table
-  questions/Q-NNN-slug.md   one note per question
-  audits/YYYY-MM-DD-<scope>/   section-*.md + report.md
-  templates/                plan, progress, question, decision, audit, phase
-  commands/                 build (+ recover, integrate), audit, resolve, intake, change, harness
-  roles/                    planner, executor, reviewer, resolver, helper: one file per dispatched role
-  scripts/                  setup, check, check-full, run: quiet wrappers around the project's own commands (stack.md); workflow-only helpers
-    git-setup               sets up the workflow repo and both ignore lists (Git below)
-  skills/workflow-review/   SKILL.md: the combined review used by every review step
-  skills/<name>/            domain skills copied from the skill library (§0), if any
+workflow/                   everything the workflow writes; its map is `template/workflow/README.md`
 ```
 
 **Layout rules**
@@ -110,7 +81,7 @@ The project's repo holds only the application. A clone of it, its history and it
 - **App repo** (`.git`): the project's own repo, with its integration branch and remote (stack.md Git). It ignores every workflow path through `.git/info/exclude`, which is never committed, so the project's `.gitignore` stays free of workflow entries.
 - **Workflow repo** (`.git/workflow`): a second git directory whose working tree is the repo root. It tracks exactly the workflow paths: `workflow/`, `AGENTS.md`, and each harness's root files (§6). Run it from the repo root as `git --git-dir=.git/workflow <command>`. Living inside `.git/`, it is invisible in the working tree, can't be swept into an app commit, survives `git clean`, and is never copied by a clone of the app. Its remote is optional (stack.md Git, Workflow remote); set one to continue on another computer.
 - `workflow/scripts/git-setup` sets both up and is the single source of the path lists: the workflow paths, and the local-only paths inside them that neither repo tracks (`workflow/.logs/`, `workflow/.obsidian/`, a harness's worktree location and local settings). It is idempotent. It fails if the app repo tracks a workflow file, and warns about a workflow file ignored by both repos (a project `.gitignore` or global excludes pattern matches it, which is fine for junk like `.DS_Store`). Bootstrap and every `recover` run it; `harness` adds a harness's root files to its list.
-- **Saving** (AGENTS.md §6 Commits): app changes are committed to the app repo with a plain Conventional Commits message, then workflow changes to the workflow repo with the workflow's tagged subject and an `App-Commit: <sha>` trailer per app commit. The trailers are the only link between the two histories. App commits that no trailer names are drift (`recover`).
+- **Saving** (`workflow/scripts/save`, AGENTS.md §6 Commits): app changes are committed to the app repo with a plain Conventional Commits message, then workflow changes to the workflow repo with the workflow's tagged subject and an `App-Commit: <sha>` trailer per app commit. The trailers are the only link between the two histories. App commits that no trailer names are drift (`workflow/scripts/drift`, run by `recover`).
 - **Never** run `git clean -x`/`-X` or `git stash --all` in the app repo: they treat workflow files as ignored and remove them. If it happens, restore them from the workflow repo (`git --git-dir=.git/workflow checkout -- .`).
 - **Another computer:** clone the app, then from its root fetch the setup script and let it bring in the workflow files (it never overwrites an existing file):
   ```
@@ -147,8 +118,9 @@ The bootstrap agent loads the `caveman` skill once the preflight passes (AGENTS.
    - **Probe** the environment (which tools exist, which versions) rather than assuming, then write `workflow/stack.md`, including the E2E, Git and Concurrency sections (the outermost headless layer and smoke flows, integration branch, remote, conflict hotspots for this stack, worktree setup).
    - If `check` can't run here at all, declare **static-only mode** in stack.md. The human must accept it explicitly at sign-off.
    - Select domain skills from the skill library (§0) and copy them in. Choose skills or plugins and record them in harness.md, including any required integration a phase can't work without (how to confirm it, and recovery steps if it's missing). List any tier-2 tools in stack.md and enable them in harness.md.
+   - Add the stack's own commands (dependency install, worktree setup, the native build, test and run commands) to this harness's permission config (§6, Permissions baseline) now, while the human is here to approve the edit.
 5. Fill in AGENTS.md §1, §4 and §6.
-6. Seed `workflow/plans/index.md` with one row per phase and row `001 Walking skeleton`. Other plans can be listed by title now. Their briefs are written just in time.
+6. Seed `workflow/plans/index.md` with one row per phase and one `planned` row per Scope-In bullet of phase 1, in build order, starting with `001 Walking skeleton`. Later phases get their rows when they start (build.md §2 step 1). Briefs are written just in time.
 7. **Sign-off gate.** Show the human a summary of one page or less: phases, stack and why, constraints, selected domain skills (with any `stale` mark) and required integrations, environment capabilities (and static-only mode if it applies), and open questions with their defaults. Apply corrections. When approved, save `docs: project definition (bootstrap)` (AGENTS.md §6 Commits), then run `build`.
 
 ---
@@ -180,7 +152,7 @@ All procedures are in `template/workflow/commands/`. What each dispatched role d
 |---|---|---|
 | `build.md` | the loop: dispatch rules, plan → execute → verify → review → close, phase end, stop conditions, IDs | the human (`build`), every session |
 | `recover.md` | resume from disk at every session start and after compaction | `build` |
-| `integrate.md` | rebase, resolve, check, review and merge one worktree unit | `build` |
+| `integrate.md` | merge the integration branch in, resolve, check, review and squash-merge one worktree unit | `build` |
 | `audit.md` | read-only phase / final / ad hoc audit, with retro | `build` at phase end, or the human |
 | `resolve.md` | settle questions with the human | the human (interactive) |
 | `intake.md` | add new scope as a phase | the human (interactive) |
@@ -233,19 +205,19 @@ Claude Code: `.claude/settings.json` (tracked in the workflow repo; the copy is 
   }
 }
 ```
-Deny rules win over allow rules, so a force push stays blocked. Editing the permission file itself always asks, so an agent can't loosen its own baseline; `harness` runs with you present. Delete slice notes with `git --git-dir=.git/workflow rm`. Add the worktree location to `permissions.additionalDirectories` if it's outside the repo, and `Bash(<main checkout>/workflow/scripts/*)` so worktree units can run the scripts by absolute path. Rule syntax changes between versions: check it against the Claude Code permissions docs, and confirm with one allowed and one denied command.
+Deny rules win over allow rules, so a force push stays blocked. Editing the permission file itself always asks, so an agent can't loosen its own baseline; `harness` runs with you present. Add the worktree location to `permissions.additionalDirectories` if it's outside the repo, and `Bash(<main checkout>/workflow/scripts/*)` so worktree units can run the scripts by absolute path. Rule syntax changes between versions: check it against the Claude Code permissions docs, and confirm with one allowed and one denied command.
 
 **Harnesses that read `AGENTS.md` natively, or any other harness**
 - Invoke a command with the prompt "Follow workflow/commands/<name>.md.", or the harness's own custom-command mechanism if it has one (record which in its section). Codex reads AGENTS.md natively. If the harness has sub-agents, map the tiers to them. Otherwise use single-agent mode. Without native worktree isolation, the Orchestrator creates worktrees itself (harness.md); check that the harness lets sub-agents work in that location without permission prompts.
 
 **Single-agent mode** (no sub-agents, small context windows, local models)
-- `build` handles **one plan per session**, always `sequential`: run recover.md, write the plan (no brief check), implement it, verify, save, then exit. The single agent is also the Orchestrator, so it writes real IDs directly instead of proposed entries. It keeps `caveman` on throughout, loads `ponytail` while planning and implementing, and turns `ponytail` off for the review pass. If the harness can clear context between writing and implementing the plan, do so. Disk carries everything over. Do the plan review after clearing context if possible; otherwise do it as a separate pass, following `workflow/roles/reviewer.md` strictly.
+- The rules the agent follows are in `workflow/commands/build.md` §6: one plan per session, always `sequential`, no brief check, real IDs written directly, the review as a separate pass.
 - Restarting the agent after each session can be automated (§7, Automatic resume).
-- With small models, keep plans to about 5 tasks and give the strong tier to the best model available.
+- With small models, give the strong tier to the best model available.
 
 ## 7. Optional add-ons
 
-- **Automatic resume** (off by default). `build` is safe to re-run at any point (`workflow/commands/recover.md`), so a shell loop or a scheduled task can start it again after a usage reset, until it reports a stop condition other than "usage running low" or "session budget reached". Set it to `on` in harness.md; the Orchestrator's session budget then ends the session instead of compacting it. Leave it off until a few supervised runs look right: it spends quota unattended.
+- **Automatic resume** (off by default). `build` is safe to re-run at any point (`workflow/commands/recover.md`), so a shell loop or a scheduled task can start it again after a usage reset, until it reports a stop condition other than "usage running low", "session budget reached" or "plan closed". Set it to `on` in harness.md; the Orchestrator's session budget then ends the session instead of compacting it. Leave it off until a few supervised runs look right: it spends quota unattended.
 - **Obsidian.** For a readable graph and a status view. Bootstrap sets it up when the human uses Obsidian (§3 Stage A step 6).
   - **Vault:** open `workflow/` as the vault, so it contains only workflow files. `workflow/.obsidian/` is local-only (`workflow/scripts/git-setup`): it's viewer preference, and Obsidian rewrites it constantly.
   - **Config** (written by bootstrap; if Obsidian ignores it, set the same by hand in Settings): links in Markdown format with relative paths; excluded files `templates/`, `commands/`, `roles/`, `skills/`, `WORKFLOW.md`; graph colour groups by folder for `docs/`, `plans/`, `progress/`, `decisions/`, `questions/`, `audits/`.

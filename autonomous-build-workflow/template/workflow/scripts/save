@@ -1,0 +1,48 @@
+#!/bin/sh
+# A save (AGENTS.md §6 Commits): the app commit, if any, then the workflow commit that names it.
+# Run from the repo root of the main checkout.
+# Usage: workflow/scripts/save [--unpushed] "<workflow subject>" ["<app message>"]
+#   no app message: workflow-only save; the app repo is left untouched
+#   --unpushed:     also name every unpushed app commit (after a rebase gave them new SHAs)
+set -eu
+
+unpushed=0
+if [ "${1:-}" = "--unpushed" ]; then unpushed=1; shift; fi
+[ $# -ge 1 ] && [ -n "$1" ] || { echo "save: usage: save [--unpushed] \"<workflow subject>\" [\"<app message>\"]" >&2; exit 2; }
+subject=$1
+app_msg=${2:-}
+
+[ -d .git ] && [ -d .git/workflow ] || { echo "save: run from the repo root of the main checkout" >&2; exit 1; }
+W="git --git-dir=.git/workflow"
+
+shas=""
+if [ -n "$app_msg" ]; then
+  git add -A
+  if ! git diff --cached --quiet; then
+    git commit -q -m "$app_msg"
+    shas=$(git rev-parse HEAD)
+  fi
+elif [ -n "$(git status --porcelain)" ]; then
+  echo "save: warning: app repo has uncommitted changes; not saved (no app message given)" >&2
+fi
+if [ "$unpushed" -eq 1 ]; then
+  # Its own assignment, so a branch without an upstream stops the save.
+  ahead=$(git rev-list '@{u}..HEAD')
+  shas=$(printf '%s\n%s\n' "$shas" "$ahead" | sort -u | sed '/^$/d')
+fi
+
+$W add -A
+if [ -z "$shas" ] && $W diff --cached --quiet; then
+  echo "save: nothing to save"
+  exit 0
+fi
+set -- -m "$subject"
+if [ -n "$shas" ]; then
+  set -- "$@" -m "$(echo "$shas" | sed 's/^/App-Commit: /')"
+fi
+# --allow-empty: an app commit with no workflow change still needs its trailer
+$W commit -q --allow-empty "$@"
+
+app=none
+[ -n "$shas" ] && app=$(echo "$shas" | cut -c1-9 | tr '\n' ' ' | sed 's/ $//')
+echo "save: app $app · workflow $($W rev-parse --short HEAD)"
