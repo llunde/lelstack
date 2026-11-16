@@ -4,7 +4,7 @@ Everything this project's agent workflow writes. The project's own code, tests a
 
 ```
 README.md                 map of this folder: what each file is for and who writes it
-WORKFLOW.md               copy of the workflow spec, SPEC.md (not read by `build`; `harness` reads its §0 and §6)
+WORKFLOW.md               copy of the workflow spec, SPEC.md (not read by `build`; `harness` reads its §0 and §6, `intake` its §0)
 docs/                     WHAT to build; changed only via intake or by the human
   brief.md                the human's project description, verbatim, never edited
   00-overview.md          vision, locked decisions, domain model, risks, phase list

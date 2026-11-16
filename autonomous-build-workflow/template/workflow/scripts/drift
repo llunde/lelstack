@@ -14,8 +14,10 @@ trap 'rm -f "$named"' EXIT
   cat workflow/plans/*.md 2>/dev/null | sed -n 's/^adopts:\([^#]*\).*/\1/p' | tr -c '0-9a-f\n' '\n'
 } | awk 'length($0) >= 7' > "$named"
 
+# Its own assignment: inside the pipeline a failing rev-list would report "none".
+revs=$(git rev-list "$branch")
 # A named SHA may be abbreviated (adopts:), so match by prefix.
-unnamed=$(git rev-list "$branch" | awk -v f="$named" '
+unnamed=$(echo "$revs" | awk -v f="$named" '
   BEGIN { while ((getline l < f) > 0) n[l] = 1 }
   { hit = 0; for (p in n) if (index($0, p) == 1) { hit = 1; break } if (!hit) print }')
 

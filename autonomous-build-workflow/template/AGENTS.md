@@ -69,8 +69,8 @@ A dispatched role follows its role file: inputs, what to load, what it may write
   - Plain prose stays for what the human reads or acts on: `acceptance.md` steps, question notes, README, `workflow/docs/`, `complete.md`, code comments, commit messages. Questions to the human are always full sentences.
 - **Links in workflow files:** Markdown links (`[text](relative/path.md)`, never wikilinks). Prefer them for these edges, so the graph shows the project's structure:
   - overview → phase docs; a plan → its source (phase doc, question, audit report), the decisions it applies, the plans it `depends_on`; a progress note → its plan; a question or decision → its source; an audit report → its phase doc and the plans it spawned.
-  - Find workflow files by exact path, or search with the folder given as the path: a search from the repo root skips `workflow/`, because the app repo ignores it.
   - Hubs (AGENTS.md, WORKFLOW.md, stack.md, harness.md, templates, commands, roles, skills, `acceptance.md`, `retro.md`) are a backticked path or a plain ID. Only two rules are hard: **indexes contain no links**, only IDs and paths, and every link resolves.
+- **Finding workflow files:** by exact path, or search with the folder given as the path: a search from the repo root skips `workflow/`, because the app repo ignores it.
 - **Comments:** minimal. Default to none: names and structure should explain the code.
   - Write one only for what the code can't say: why it's done this way, a non-obvious constraint or invariant (units, ordering, thread safety), a known limit (`shortcut: <limit>, <upgrade path>`), a workaround for an external bug (link the upstream issue), or a doc comment the stack's conventions require on a public API.
   - Keep it to one line where possible, three at most.

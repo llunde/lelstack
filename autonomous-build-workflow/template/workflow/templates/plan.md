@@ -11,7 +11,7 @@ model: standard/medium # Executor tier/effort proposal; higher only with a reaso
 depends_on: []         # plan IDs that must be done first
 owns: []               # paths/globs this plan may edit (union of its slices)
 source: <workflow/docs/NN §x | Q-NNN | audit YYYY-MM-DD F<n> | A-NNN | change YYYY-MM-DD | drift YYYY-MM-DD | plan NNN review #n | plan NNN (partial close)>
-adopts: []             # SHAs of commits made outside the loop that this plan adopts
+adopts: []             # SHAs of commits made outside the loop that this plan adopts; keep the list on this line (workflow/scripts/drift reads it)
 created: YYYY-MM-DD
 completed:
 ---

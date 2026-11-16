@@ -26,7 +26,9 @@ elif [ -n "$(git status --porcelain)" ]; then
   echo "save: warning: app repo has uncommitted changes; not saved (no app message given)" >&2
 fi
 if [ "$unpushed" -eq 1 ]; then
-  shas=$(printf '%s\n%s\n' "$shas" "$(git rev-list '@{u}..HEAD')" | sort -u | sed '/^$/d')
+  # Its own assignment, so a branch without an upstream stops the save.
+  ahead=$(git rev-list '@{u}..HEAD')
+  shas=$(printf '%s\n%s\n' "$shas" "$ahead" | sort -u | sed '/^$/d')
 fi
 
 $W add -A

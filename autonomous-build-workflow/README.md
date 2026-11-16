@@ -315,7 +315,7 @@ flowchart LR
 | **Integration unavailable** | A tool integration the phase needs (e.g. an MCP server) isn't reachable. Follow the recovery steps it reports, then `/build`. |
 | **Environment broken** | The toolchain or dependencies are missing or broken on this machine. Fix what it names, then `/build`. |
 | **Unknown harness** | You opened the project in a harness that isn't set up yet. Run `/harness` from it. |
-| **Plan closed** | Only in single-agent mode (a harness without sub-agents): `/build` again for the next plan. |
+| **Plan closed** | Only in single-agent mode (a harness without sub-agents): `/build` again for the next plan or audit step. |
 | **Session budget reached** | Only with automatic resume on: the loop starts a fresh session by itself. |
 
 If a session dies without a clean stop (crash, cutoff), just run `/build`. It resumes interrupted plans, reviews and merges from disk:
