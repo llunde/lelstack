@@ -4,7 +4,7 @@ Gather what gandalf needs to work in the current repo into its project note. Re-
 
 ## Full
 1. `workflow/GANDALF.md` §2 Start. Must be inside a git repo below the instance. If the project note exists, this is a refresh: keep `## Learnings`, `notes/`, `rules.md` and the group; update everything else and report what changed.
-2. **Gather** (a scout at fast / medium with the list below, or yourself for a small repo). Every fact needs evidence; mark guesses `(guess)`.
+2. **Gather** (a scout at standard / medium with the list below, or yourself for a small repo). Every fact needs evidence; mark guesses `(guess)`.
    - **Stack and layout:** languages, frameworks and versions, solution or project files, where backend, frontend and tests live, pinned tool versions (`.nvmrc`, `global.json`, `.tool-versions`). At most ten lines.
    - **Commands:** build, run, test, lint and format, from the README, CONTRIBUTING, package manifests, Makefile or scripts, and CI config. Note the working directory for each.
    - **Git:**

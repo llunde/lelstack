@@ -47,18 +47,19 @@ From strongest to weakest:
 ## 6. Dispatch
 You run at the session's model. Delegate when the work would flood your context (broad search, long logs, a big implementation) or a cheaper model can do it well. Do it yourself when it's small and you already hold the context: a sub-agent re-reads everything you know.
 
-Tiers `fast` / `standard` / `strong` and effort `low` / `medium` / `high` map to models in §11. Start at the cheapest setting that fits; going higher needs one concrete reason from the table or the task ("important" and "to be safe" aren't reasons).
+Tiers `fast` / `standard` / `strong` and effort `low` / `medium` / `high` map to models in §11. gandalf runs now and then with the human present, so the starting points favour getting it right the first time over saving tokens: a wrong fact or a missed review finding costs more than the tokens. Start at the setting the table gives; going higher needs one concrete reason from the table or the task ("important" and "to be safe" aren't reasons).
 
 | Work | Start at | Start higher when |
 |---|---|---|
-| Scout (workflow/roles/scout.md): find code, gather facts, triage a failure | fast / low | standard / medium: needs judgment across many files |
-| Onboarding gather (`workflow/commands/onboard.md`) | fast / medium | |
-| Builder (workflow/roles/builder.md): implement | standard / medium; fast / low for mechanical edits | strong / medium: security, auth, money, concurrency or data-integrity logic, or a cross-cutting design change |
+| Scout (workflow/roles/scout.md): find code, gather facts | standard / low | standard / medium: needs judgment across many files |
+| Scout: pull the decisive lines out of long output (a log, a failing test run) | fast / low | |
+| Onboarding gather (`workflow/commands/onboard.md`) | standard / medium | |
+| Builder (workflow/roles/builder.md): implement | standard / high; standard / low for mechanical edits | strong / high: security, auth, money, concurrency or data-integrity logic, or a cross-cutting design change |
 | Builder: fix round | the setting that built it | |
-| Reviewer (workflow/roles/reviewer.md) | standard / medium | strong / medium: the diff touches the risky areas above, or is large |
-| Re-review of a fix diff | standard / low | |
+| Reviewer (workflow/roles/reviewer.md) | strong / medium; standard / medium for a diff of a few lines | strong / high: the diff touches the risky areas above, or is large |
+| Re-review of a fix diff | standard / medium | |
 
-**Ladder** for retries: fast / low → standard / medium → standard / high → strong / medium → strong / high. A second failure of the same thing goes one rung up; a failure at strong / high goes to the human.
+**Ladder** for retries: standard / medium → standard / high → strong / medium → strong / high. A second failure of the same thing goes one rung up from the setting it ran at; a failure at strong / high goes to the human.
 
 **Briefs** start "Follow `<absolute path to the role file>`." and give only the inputs the role lists, one `key: value` per line. Record each dispatch as one Log line in the session file (`builder standard/medium`, plus the reason if above the start).
 

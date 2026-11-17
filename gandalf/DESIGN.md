@@ -65,7 +65,7 @@ Named after the Red Book of Westmarch. Plain markdown, wikilinks as vault-relati
 Prefixed `gandalf-` because the stubs are user-level and must not collide with elrond's project-level `/intake`.
 
 ## Orchestration
-Reused from elrond, slimmed down: the main session is the orchestrator; it delegates to three roles (`scout` read-only, `builder`, `reviewer`) and picks tier and effort per dispatch from a start-cheap table with the same escalation ladder. Sequential only, no worktrees, no planner role (the orchestrator writes the plan into the session file). It does small work itself when it already holds the context, because a sub-agent would re-read everything.
+Reused from elrond, slimmed down: the main session is the orchestrator; it delegates to three roles (`scout` read-only, `builder`, `reviewer`) and picks tier and effort per dispatch from a table with an escalation ladder. The starting points sit a notch above elrond's: elrond runs continuously and has to conserve tokens, while gandalf runs now and then with a human waiting, so a wrong fact or a missed finding costs more than the tokens. The ladder is elrond's without its bottom fast / low rung. Sequential only, no worktrees, no planner role (the orchestrator writes the plan into the session file). It does small work itself when it already holds the context, because a sub-agent would re-read everything.
 
 ## Skills
 - `check` (review) and `pr-text` (commit and PR text): copied into `lelstack/skills/` (client ticket prefix scrubbed from pr-text) and pinned into each instance's `workflow/skills/`. Gandalf prefers the user-level install when present, then the pinned copy. `check` is `disable-model-invocation`, so the reviewer reads its `SKILL.md` and follows it, minus its "wait for me" ending.

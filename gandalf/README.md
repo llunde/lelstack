@@ -156,6 +156,8 @@ Delete `<root>/.gandalf/` (keep `red-book/` if you want the notes) and the comma
 
 In Codex, use `$gandalf-intake …`. In any harness you can also say "Follow `<root>/.gandalf/workflow/commands/intake.md`".
 
+**Models.** The session you run a command in leads it: it plans, triages review findings and decides what to delegate, so run it on the strongest model you have (Opus in Claude Code). Sub-agents get their own model and effort per job: Sonnet for scouts and builders, Opus for reviews, Haiku only to pull the key lines out of long logs. The table is in [workflow/GANDALF.md](workflow/GANDALF.md) §6.
+
 ### A task, step by step
 1. Loads the rules and this project's notes. Checks the working tree: uncommitted work or an existing feature branch makes it ask instead of branching.
 2. Fetches and branches from the project's base branch, named by the project's convention (with the issue key if your text has one).
