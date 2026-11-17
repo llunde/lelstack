@@ -1,0 +1,40 @@
+# Obsidian Bases overview for you. Agents never read this file.
+views:
+  - type: table
+    name: Open sessions
+    filters:
+      and:
+        - 'type == "session"'
+        - 'status != "done"'
+        - 'status != "abandoned"'
+    order:
+      - file.name
+      - project
+      - status
+      - step
+      - branch
+      - next
+      - updated
+  - type: table
+    name: Projects
+    filters:
+      and:
+        - 'type == "project"'
+    order:
+      - file.name
+      - group
+      - host
+      - base_branch
+      - onboarded
+      - last_retro
+  - type: table
+    name: All sessions
+    filters:
+      and:
+        - 'type == "session"'
+    order:
+      - file.name
+      - project
+      - status
+      - pr
+      - updated

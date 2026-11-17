@@ -1,0 +1,89 @@
+#!/bin/sh
+# Print lines in the given files that name any project or group of this instance: a possible leak.
+# --except <dir> allows the terms of that one project or group (the scope the text belongs to).
+# Usage: leakcheck [--except <project_dir|group_dir>] <file>... ("-" reads stdin).
+#        Exit 0 when clean, 1 when something is found, 2 on an error (a file it can't read, a bad --except).
+#        leakcheck --mask   copies stdin to stdout with every such term replaced by <name>.
+set -eu
+g=$(cd "$(dirname "$0")/../.." && pwd -P)
+brain="$g/red-book"
+mask=no
+[ "${1:-}" = --mask ] && { mask=yes; shift; }
+except=
+if [ "${1:-}" = --except ]; then
+  except=${2:-}
+  # A group's folder may not exist yet (context prints group_dir from the project note); its name still counts.
+  case $except in
+    */red-book/projects/?*|*/red-book/groups/?*) except=${except%/} ;;
+    *) echo "leakcheck: --except needs a project_dir or group_dir, got '$except'" >&2; exit 2 ;;
+  esac
+  shift 2
+fi
+[ $# -ge 1 ] || [ "$mask" = yes ] || { echo "usage: leakcheck [--except <dir>] <file>..." >&2; exit 2; }
+for f in "$@"; do
+  [ "$f" = - ] || [ -r "$f" ] || { echo "leakcheck: can't read $f" >&2; exit 2; }
+done
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+# Terms that identify a project or group: the segments of its folder name, path and remote, and its group.
+# Group names are marked "=": they always count. Other terms are dropped when they're hosts, URL parts or
+# generic folder and repo names (work, clients, backend, docs, …): those name nothing, and masking them
+# would garble generic lessons.
+terms_of() { # <project_dir|group_dir>, which may not exist
+  name=$(basename "$1")
+  # By the folder it sits in, never by a "groups" folder higher up the workspace's own path.
+  case ${1%/*} in
+    */red-book/groups) echo "=$name" ;;
+    *) printf '%s\n' "$name" | awk '{gsub(/--/, "\n"); print}' ;;
+  esac
+  "$(dirname "$0")/frontmatter" "$1/$name.md" | awk -F '\t' '
+    $1=="group" {print "=" $2}
+    $1=="path" || $1=="remote" {v=$2; sub(/\.git$/, "", v); gsub(/[\/:]/, "\n", v); print v}'
+}
+for d in "$brain"/projects/*/ "$brain"/groups/*/; do
+  [ -d "$d" ] && terms_of "${d%/}"
+done > "$tmp/all"
+: > "$tmp/except"
+[ -n "$except" ] && terms_of "$except" > "$tmp/except"
+generic=$(echo 'http https ssh git v3 _git github gitlab azure bitbucket
+  work repo repos code src source projects project clients client customers customer apps app services service
+  libs lib packages pkg personal private priv home users documents workspace dev
+  api web www site website backend frontend server mobile ios android desktop cli ui db docs doc infra
+  ops deploy tools scripts core common shared config test tests main' | tr '\n' ' ')
+# No pipe into sort: a failing awk must stop the script, not leave an empty term list that reads as clean.
+awk -v generic="$generic" '
+  BEGIN {n=split(generic, a, / +/); for (i=1; i<=n; i++) gen[a[i]]=1}
+  {strong=sub(/^=/, ""); t=tolower($0); gsub(/^ +| +$/, "", t)}
+  length(t) < 2 {next}
+  !strong && (t in gen || t ~ /@/ || t ~ /\.(com|org|net|io)$/) {next}
+  FILENAME==ARGV[1] {skip[t]=1; next}
+  !(t in skip) {print t}' "$tmp/except" "$tmp/all" > "$tmp/terms.raw"
+sort -u "$tmp/terms.raw" > "$tmp/terms"
+
+if [ "$mask" = yes ]; then
+  [ -s "$tmp/terms" ] || { cat; exit 0; } # awk's NR==FNR would read stdin as the terms
+  # Longest first: masking "acme" before "acme-billing" would leave "<name>-billing".
+  awk '{print length($0) "\t" $0}' "$tmp/terms" | sort -k1,1nr | cut -f2- > "$tmp/terms.long"
+  # Case-insensitive whole words, like grep -iw below. Matches become \001 while scanning, so a term
+  # can never match inside an inserted <name>, and each scan moves past what it replaced.
+  awk 'function w(c) {return c ~ /[A-Za-z0-9_]/}
+    NR==FNR {t[++n]=tolower($0); next}
+    {for (k=1; k<=n; k++) {out=""; rest=$0; L=length(t[k])
+      while ((i=index(tolower(rest), t[k])) > 0) {
+        b=(i > 1) ? substr(rest, i-1, 1) : substr(out, length(out), 1); a=substr(rest, i+L, 1)
+        if (w(b) || w(a)) {out=out substr(rest, 1, i); rest=substr(rest, i+1)}
+        else {out=out substr(rest, 1, i-1) "\001"; rest=substr(rest, i+L)}}
+      $0=out rest}
+     gsub(/\001/, "<name>"); print}' "$tmp/terms.long" -
+  exit 0
+fi
+[ -s "$tmp/terms" ] || { echo "leakcheck: clean"; exit 0; }
+rc=0
+grep -n -i -w -F -f "$tmp/terms" "$@" || rc=$?
+case $rc in
+  0) exit 1 ;;
+  1) echo "leakcheck: clean" ;;
+  *) echo "leakcheck: grep failed ($rc)" >&2; exit 2 ;;
+esac

@@ -1,0 +1,13 @@
+#!/bin/sh
+# Print a note's frontmatter as "key<TAB>value" lines: the one frontmatter parser the scripts share.
+# Values lose surrounding spaces and one pair of surrounding quotes. Nothing is printed for a file that
+# doesn't exist or has no frontmatter.
+# Usage: frontmatter <file> [<key>]   with a key, prints only that key's value
+set -eu
+[ -f "${1:?usage: frontmatter <file> [<key>]}" ] || exit 0
+awk -v want="${2-}" 'NR==1 && $0!="---" {exit} NR>1 && $0=="---" {exit} NR==1 {next}
+  {i=index($0, ":"); if (!i) next
+   k=substr($0, 1, i-1); v=substr($0, i+1); sub(/^[ \t]+/, "", v); sub(/[ \t\r]+$/, "", v)
+   if (length(v) >= 2 && (v ~ /^".*"$/ || v ~ /^\047.*\047$/)) v=substr(v, 2, length(v)-2)
+   if (want == "") print k "\t" v
+   else if (k == want) {print v; exit}}' "$1"
