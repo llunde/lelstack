@@ -13,11 +13,7 @@ g="$root/.gandalf"
 brain="$g/red-book"
 
 # fm <key> <file>: a value from the file's frontmatter, empty if missing.
-fm() {
-  [ -f "$2" ] || return 0
-  awk -v k="$1" 'NR==1 && $0!="---" {exit} NR>1 && $0=="---" {exit}
-    NR>1 && index($0, k ":")==1 {v=substr($0, length(k)+2); sub(/^ +/, "", v); print v; exit}' "$2"
-}
+fm() { "$(dirname "$0")/frontmatter" "$2" "$1"; }
 
 echo "root=$root"
 echo "gandalf=$g"

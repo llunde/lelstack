@@ -38,7 +38,9 @@ fi
 # A workspace root inside a git repo must not let that repo pick up the instance.
 if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   top=$(git -C "$ROOT" rev-parse --show-toplevel)
-  exclude=$(git -C "$ROOT" rev-parse --path-format=absolute --git-path info/exclude)
+  # Relative to $ROOT unless git prints it absolute. Not --path-format=absolute: that needs git 2.31.
+  exclude=$(git -C "$ROOT" rev-parse --git-path info/exclude)
+  case $exclude in /*) ;; *) exclude="$ROOT/$exclude" ;; esac
   line="${G#"$top"}/"
   mkdir -p "$(dirname "$exclude")"
   if ! grep -qxF "$line" "$exclude" 2>/dev/null; then
@@ -50,25 +52,49 @@ fi
 mkdir -p "$G"
 # A local repo for the red book's history. It has no remote and is never pushed.
 [ -d "$G/.git" ] || git -C "$G" init -q
-commit() { # <message> <path>...: only these, so another session's unfinished red-book edits stay out
-  msg=$1; shift
-  git -C "$G" add -A -- "$@"
-  git -C "$G" diff --cached --quiet -- "$@" ||
-    git -C "$G" commit -q -m "$msg" -- "$@" || echo "setup: couldn't commit the instance; left uncommitted" >&2
-}
-# Keep the workflow files as they were before replacing them, local edits included.
-[ "$mode" = update ] && [ -e "$G/workflow" ] && commit "gandalf: snapshot before update to $VERSION" "$G/workflow"
 
-# Workflow-owned: replaced wholesale.
+# Workflow-owned: replaced wholesale. Staged first, so its save commits the instance before the swap.
 rm -rf "$G/workflow.new"
+trap 'rm -rf "$G/workflow.new"' EXIT # gone after the swap; left by an aborted run, a path-less save would commit it
 cp -R "$SRC/workflow" "$G/workflow.new"
 mkdir -p "$G/workflow.new/skills"
 for s in check pr-text; do
   [ -d "$SRC/../skills/$s" ] && cp -R "$SRC/../skills/$s" "$G/workflow.new/skills/"
 done
+chmod +x "$G"/workflow.new/scripts/*
+save="$G/workflow.new/scripts/save"
+# <message> <path>...: only these, so another session's unfinished red-book edits stay out. save retries
+# while another session holds git's lock, and fails if the commit does.
+commit() { "$save" "$@" >/dev/null; }
+
+# Keep the workflow files, and a red book about to be migrated, as they were: local edits included.
+# Nothing is replaced or migrated unless that snapshot is committed.
+if [ "$mode" = update ]; then
+  set --
+  [ -e "$G/workflow" ] && set -- "$G/workflow"
+  [ "$schema" -lt "$SCHEMA" ] && [ -e "$G/red-book" ] && set -- "$@" "$G/red-book"
+  [ $# -eq 0 ] || commit "gandalf: snapshot before update to $VERSION" "$@" || {
+    echo "setup: couldn't commit a snapshot of $G, so nothing was replaced; fix committing there and re-run" >&2
+    exit 1
+  }
+fi
+
+mkdir -p "$G/red-book/projects" "$G/red-book/groups"
+n=$schema
+while [ "$n" -lt "$SCHEMA" ]; do
+  n=$((n + 1))
+  echo "setup: migrating the red book to schema $n"
+  sh "$SRC/migrations/$n.sh" "$G"
+done
+# A migration can rewrite any of the red book: its own commit, so git show reviews it alone.
+if [ "$schema" -lt "$SCHEMA" ]; then
+  commit "gandalf: migrate the red book to schema $SCHEMA" "$G/red-book" ||
+    echo "setup: couldn't commit the migration; left uncommitted" >&2
+fi
+
 rm -rf "$G/workflow"
 mv "$G/workflow.new" "$G/workflow"
-chmod +x "$G"/workflow/scripts/*
+save="$G/workflow/scripts/save"
 
 # Instance-owned: seeded once, never overwritten. The seeded files are committed with this run.
 touched=$(printf '%s\n' "$G/workflow" "$G/instance.conf")
@@ -79,16 +105,8 @@ seeded=$( (cd "$SRC/seed" && find . -type f) | while IFS= read -r f; do
     printf '%s\n' "$G/${f#./}"
   fi
 done)
-mkdir -p "$G/red-book/projects" "$G/red-book/groups"
-
-n=$schema
-while [ "$n" -lt "$SCHEMA" ]; do
-  n=$((n + 1))
-  echo "setup: migrating the red book to schema $n"
-  sh "$SRC/migrations/$n.sh" "$G"
-done
-# A migration can rewrite any of the red book, and a bootstrap has nothing else in it: commit it all.
-{ [ "$mode" = bootstrap ] || [ "$schema" -lt "$SCHEMA" ]; } && touched=$G
+# A bootstrap has nothing else in the instance: commit it all.
+[ "$mode" = bootstrap ] && touched=$G
 
 cat > "$G/instance.conf" <<EOF
 # gandalf instance; written by setup, don't edit
@@ -145,9 +163,13 @@ if [ "$stubs" = yes ]; then
     stub_dirs="$HOME/.agents/skills"
     if [ -d "$HOME/.claude" ]; then
       mkdir -p "$HOME/.claude/skills"
-      prune_stubs "$HOME/.claude/skills" "$HOME/.agents/skills"
-      for s in "$SRC"/stubs/*/; do link_stub "$HOME/.agents/skills/$(basename "$s")" "$HOME/.claude/skills"; done
-      stub_dirs="$stub_dirs, $HOME/.claude/skills"
+      # One folder linked to the other already serves Claude Code; linking would replace each copy with a
+      # link to itself.
+      if [ "$(cd -P "$HOME/.claude/skills" && pwd)" != "$(cd -P "$HOME/.agents/skills" && pwd)" ]; then
+        prune_stubs "$HOME/.claude/skills" "$HOME/.agents/skills"
+        for s in "$SRC"/stubs/*/; do link_stub "$HOME/.agents/skills/$(basename "$s")" "$HOME/.claude/skills"; done
+        stub_dirs="$stub_dirs, $HOME/.claude/skills"
+      fi
     fi
   fi
 fi
@@ -159,10 +181,14 @@ old_ifs=$IFS; IFS='
 set -- $touched $seeded
 IFS=$old_ifs; set +f
 if [ "$mode" = bootstrap ]; then
-  commit "gandalf: bootstrap $VERSION" "$@"
+  msg="gandalf: bootstrap $VERSION"
+else
+  msg="gandalf: update ${from:-?} -> $VERSION"
+fi
+commit "$msg" "$@" || echo "setup: couldn't commit the instance; left uncommitted" >&2
+if [ "$mode" = bootstrap ]; then
   echo "setup: created the gandalf instance $VERSION in $G"
 else
-  commit "gandalf: update ${from:-?} -> $VERSION" "$@"
   echo "setup: updated $G from ${from:-?} to $VERSION"
 fi
 [ -n "$stub_dirs" ] && echo "setup: command stubs in $stub_dirs"

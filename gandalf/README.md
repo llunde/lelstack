@@ -114,7 +114,7 @@ A session runs inside a repo, so the instance is outside its working directory a
 }
 ```
 
-The `//` in `Edit` and `Write` rules marks an absolute path. The scripts are small helpers: find the project, list sessions, scan for leaks, and `save`, which commits the instance repo (only that one, never a project, never pushed). Gandalf runs `save` as a script so it works even where your permission rules deny `git commit`; if you'd rather it didn't, add a deny rule for `Bash(<root>/.gandalf/workflow/scripts/save*)` and the instance just stays uncommitted.
+The `//` in `Edit` and `Write` rules marks an absolute path. The scripts are small helpers: find the project, list sessions, read note frontmatter, scan for leaks, and `save`, which commits the instance repo (only that one, never a project, never pushed). Gandalf runs `save` as a script so it works even where your permission rules deny `git commit`; if you'd rather it didn't, add a deny rule for `Bash(<root>/.gandalf/workflow/scripts/save*)` and the instance just stays uncommitted.
 
 ### 4. Check that it works
 ```sh
@@ -301,7 +301,7 @@ flowchart LR
 
 ## Updating
 
-Run `/gandalf-update` from any repo below the root, or `<lelstack>/gandalf/setup <workspace root>` again. `workflow/` is replaced; the red book is never overwritten, only migrated when its layout changes (`migrations/`). setup commits the instance before and after, so `git diff HEAD~1` in `<root>/.gandalf` shows what an update did, and local edits to `workflow/` stay in its history.
+Run `/gandalf-update` from any repo below the root, or `<lelstack>/gandalf/setup <workspace root>` again. `workflow/` is replaced; the red book is never overwritten, only migrated when its layout changes (`migrations/`). setup first commits a snapshot of `workflow/` (and of the red book, when it's about to be migrated) and stops if it can't, so local edits to `workflow/` stay in its history. A migration gets a commit of its own, then the update another: `git log` in `<root>/.gandalf` shows each step.
 
 ## Improving gandalf
 

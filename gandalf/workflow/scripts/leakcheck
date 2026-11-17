@@ -33,15 +33,14 @@ trap 'rm -rf "$tmp"' EXIT
 # would garble generic lessons.
 terms_of() { # <project_dir|group_dir>, which may not exist
   name=$(basename "$1")
-  case $1 in
-    */groups/*) echo "=$name" ;;
+  # By the folder it sits in, never by a "groups" folder higher up the workspace's own path.
+  case ${1%/*} in
+    */red-book/groups) echo "=$name" ;;
     *) printf '%s\n' "$name" | awk '{gsub(/--/, "\n"); print}' ;;
   esac
-  awk 'NR==1 && $0!="---" {exit} NR>1 && $0=="---" {exit}
-    {gsub(/["\047]/, "")}
-    NR>1 && /^group:/ {sub(/^group: */, ""); print "=" $0}
-    NR>1 && /^(path|remote):/ {sub(/^[a-z]+: */, ""); sub(/\.git$/, ""); gsub(/[\/:]/, "\n"); print}' \
-    "$1/$name.md" 2>/dev/null || true
+  "$(dirname "$0")/frontmatter" "$1/$name.md" | awk -F '\t' '
+    $1=="group" {print "=" $2}
+    $1=="path" || $1=="remote" {v=$2; sub(/\.git$/, "", v); gsub(/[\/:]/, "\n", v); print v}'
 }
 for d in "$brain"/projects/*/ "$brain"/groups/*/; do
   [ -d "$d" ] && terms_of "${d%/}"
@@ -65,6 +64,8 @@ sort -u "$tmp/terms.raw" > "$tmp/terms"
 
 if [ "$mask" = yes ]; then
   [ -s "$tmp/terms" ] || { cat; exit 0; } # awk's NR==FNR would read stdin as the terms
+  # Longest first: masking "acme" before "acme-billing" would leave "<name>-billing".
+  awk '{print length($0) "\t" $0}' "$tmp/terms" | sort -k1,1nr | cut -f2- > "$tmp/terms.long"
   # Case-insensitive whole words, like grep -iw below. Matches become \001 while scanning, so a term
   # can never match inside an inserted <name>, and each scan moves past what it replaced.
   awk 'function w(c) {return c ~ /[A-Za-z0-9_]/}
@@ -75,7 +76,7 @@ if [ "$mask" = yes ]; then
         if (w(b) || w(a)) {out=out substr(rest, 1, i); rest=substr(rest, i+1)}
         else {out=out substr(rest, 1, i-1) "\001"; rest=substr(rest, i+L)}}
       $0=out rest}
-     gsub(/\001/, "<name>"); print}' "$tmp/terms" -
+     gsub(/\001/, "<name>"); print}' "$tmp/terms.long" -
   exit 0
 fi
 [ -s "$tmp/terms" ] || { echo "leakcheck: clean"; exit 0; }
