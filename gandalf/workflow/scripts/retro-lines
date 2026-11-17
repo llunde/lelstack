@@ -1,0 +1,13 @@
+#!/bin/sh
+# Print the "- gandalf:" lessons from every session, with the session's date. Project and group names are masked.
+# Usage: retro-lines [--since YYYY-MM-DD]
+set -eu
+g=$(cd "$(dirname "$0")/../.." && pwd -P)
+since=0000-00-00
+[ "${1:-}" = --since ] && [ -n "${2:-}" ] && since=$2
+for f in "$g"/red-book/projects/*/sessions/*.md; do
+  [ -f "$f" ] && printf '%s\n' "$f"
+done | while IFS= read -r f; do
+  d=$(basename "$f" | cut -c1-10)
+  awk -v d="$d" -v since="$since" 'd >= since && /^- gandalf:/ {sub(/^- gandalf: */, ""); print d ": " $0}' "$f"
+done | sort | "$(dirname "$0")/leakcheck" --mask

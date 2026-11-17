@@ -1,0 +1,4 @@
+# Obsidian's per-machine view state
+red-book/.obsidian/workspace*.json
+red-book/.obsidian/cache
+.DS_Store

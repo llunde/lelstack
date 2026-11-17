@@ -1,0 +1,62 @@
+#!/bin/sh
+# Resolve the gandalf instance and the current project. Prints key=value lines; on failure one error= line and exit 1.
+# Usage: context [<dir>]   (default: the current directory)
+set -eu
+
+dir=$(cd "${1:-.}" 2>/dev/null && pwd -P) || { echo "error=no such directory: ${1:-.}"; exit 1; }
+root=$dir
+while [ ! -f "$root/.gandalf/instance.conf" ]; do
+  [ "$root" = / ] && { echo "error=no gandalf instance at or above $dir"; exit 1; }
+  root=$(dirname "$root")
+done
+g="$root/.gandalf"
+brain="$g/red-book"
+
+# fm <key> <file>: a value from the file's frontmatter, empty if missing.
+fm() {
+  [ -f "$2" ] || return 0
+  awk -v k="$1" 'NR==1 && $0!="---" {exit} NR>1 && $0=="---" {exit}
+    NR>1 && index($0, k ":")==1 {v=substr($0, length(k)+2); sub(/^ +/, "", v); print v; exit}' "$2"
+}
+
+echo "root=$root"
+echo "gandalf=$g"
+echo "brain=$brain"
+grep -E '^(version|schema|source)=' "$g/instance.conf" || true
+[ -f "$brain/rules.md" ] && echo "rules_global=$brain/rules.md"
+
+top=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || { echo "repo="; exit 0; }
+# A linked worktree belongs to its main repo's project.
+common=$(cd "$dir" && cd "$(git rev-parse --git-common-dir)" && pwd -P)
+case $common in
+  */.git) repo=${common%/.git} ;;
+  *) repo=$(cd "$top" && pwd -P) ;;
+esac
+case $repo in
+  "$g"|"$g"/*) echo "repo="; exit 0 ;;
+  "$root"|"$root"/*) ;;
+  *) echo "error=repo $repo is outside the instance root $root"; exit 1 ;;
+esac
+rel=${repo#"$root"}; rel=${rel#/}
+[ -n "$rel" ] || rel=$(basename "$repo")
+slug=$(printf %s "$rel" | sed 's#/#--#g')
+pdir="$brain/projects/$slug"
+entry="$pdir/$slug.md"
+onboarded=no
+[ -f "$entry" ] && onboarded=$(fm onboarded "$entry")
+group=$(fm group "$entry")
+
+echo "repo=$repo"
+echo "rel=$rel"
+echo "project=$slug"
+echo "project_dir=$pdir"
+echo "project_note=$entry"
+echo "onboarded=${onboarded:-no}"
+echo "branch=$(git -C "$dir" branch --show-current 2>/dev/null)"
+echo "group=$group"
+if [ -n "$group" ]; then
+  echo "group_dir=$brain/groups/$group"
+  [ -f "$brain/groups/$group/rules.md" ] && echo "rules_group=$brain/groups/$group/rules.md"
+fi
+[ -f "$pdir/rules.md" ] && echo "rules_project=$pdir/rules.md"
+exit 0

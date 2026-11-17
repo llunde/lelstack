@@ -1,0 +1,44 @@
+#!/bin/sh
+# Print lines in the given files that name any project or group of this instance: a possible leak.
+# --except <dir> allows the terms of that one project or group (the scope the text belongs to).
+# Usage: leakcheck [--except <project_dir|group_dir>] <file>... ("-" reads stdin). Exit 1 when something is found.
+#        leakcheck --mask   copies stdin to stdout with every such term replaced by <name>.
+set -eu
+g=$(cd "$(dirname "$0")/../.." && pwd -P)
+brain="$g/red-book"
+mask=no
+[ "${1:-}" = --mask ] && { mask=yes; shift; }
+except=
+if [ "${1:-}" = --except ]; then except=$(cd "$2" && pwd -P); shift 2; fi
+[ $# -ge 1 ] || [ "$mask" = yes ] || { echo "usage: leakcheck [--except <dir>] <file>..." >&2; exit 2; }
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+# Terms that identify a project or group: its folder name, path segments, remote org and repo, group.
+terms_of() {
+  name=$(basename "$1")
+  echo "$name"
+  awk 'NR==1 && $0!="---" {exit} NR>1 && $0=="---" {exit}
+    NR>1 && /^(path|remote|group):/ {sub(/^[a-z]+: */, ""); print}' "$1/$name.md" 2>/dev/null |
+    sed 's#\.git$##' | tr '/' '\n'
+}
+for d in "$brain"/projects/*/ "$brain"/groups/*/; do
+  [ -d "$d" ] && terms_of "${d%/}"
+done > "$tmp/all"
+: > "$tmp/except"
+[ -n "$except" ] && terms_of "$except" > "$tmp/except"
+grep -E '^[^:]{4,}$' "$tmp/all" | grep -vxE 'github\.com|dev\.azure\.com|gitlab\.com|ssh\.dev\.azure\.com' |
+  grep -vxF -f "$tmp/except" | sort -u > "$tmp/terms" || true
+
+if [ "$mask" = yes ]; then
+  # Case-insensitive; terms are at least 4 characters, so no word-boundary check.
+  awk 'NR==FNR {t[++n]=tolower($0); next}
+    {for (k=1; k<=n; k++) {l=tolower($0); while ((i=index(l, t[k])) > 0) {
+      $0=substr($0, 1, i-1) "<name>" substr($0, i+length(t[k])); l=tolower($0)}} print}' "$tmp/terms" -
+  exit 0
+fi
+if [ -s "$tmp/terms" ] && grep -n -i -w -F -f "$tmp/terms" "$@"; then
+  exit 1
+fi
+echo "leakcheck: clean"

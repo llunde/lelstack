@@ -1,0 +1,161 @@
+#!/bin/sh
+# Bootstrap a gandalf instance into a workspace root, or update an existing one. Idempotent.
+# Usage: setup <workspace root> [--no-stubs]
+# GANDALF_STUBS_DIR=<dir> installs the command stubs there instead of the user-level skill folders.
+set -eu
+
+SCHEMA=1 # red-book layout version; raise it together with a new migrations/<n>.sh
+
+[ $# -ge 1 ] || { echo "usage: setup <workspace root> [--no-stubs]" >&2; exit 2; }
+SRC=$(cd "$(dirname "$0")" && pwd -P)
+ROOT=$(cd "$1" 2>/dev/null && pwd -P) || { echo "setup: no such directory: $1" >&2; exit 1; }
+stubs=yes
+[ "${2:-}" = --no-stubs ] && stubs=no
+G="$ROOT/.gandalf"
+VERSION=$(cat "$SRC/VERSION")
+today=$(date +%F)
+
+case $ROOT in "$SRC"|"$SRC"/*) echo "setup: the workspace can't be inside the gandalf source folder" >&2; exit 1 ;; esac
+command -v git >/dev/null || { echo "setup: git is required" >&2; exit 1; }
+
+conf() { sed -n "s/^$1=//p" "$G/instance.conf" 2>/dev/null | head -n 1; }
+
+if [ -f "$G/instance.conf" ]; then
+  mode=update; from=$(conf version); schema=$(conf schema); created=$(conf created)
+  if [ "$schema" -gt "$SCHEMA" ]; then
+    echo "setup: this instance's red book is schema $schema, newer than this gandalf's $SCHEMA; use a newer lelstack" >&2
+    exit 1
+  fi
+else
+  mode=bootstrap; from=; schema=$SCHEMA; created=$today
+fi
+
+# A workspace root inside a git repo must not let that repo pick up the instance.
+if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  top=$(git -C "$ROOT" rev-parse --show-toplevel)
+  exclude=$(git -C "$ROOT" rev-parse --path-format=absolute --git-path info/exclude)
+  line="${G#"$top"}/"
+  mkdir -p "$(dirname "$exclude")"
+  grep -qxF "$line" "$exclude" 2>/dev/null || echo "$line" >> "$exclude"
+  echo "setup: $ROOT is inside the git repo $top; added $line to its .git/info/exclude"
+fi
+
+mkdir -p "$G"
+# A local repo for the red book's history. It has no remote and is never pushed.
+[ -d "$G/.git" ] || git -C "$G" init -q
+commit() {
+  git -C "$G" add -A
+  git -C "$G" diff --cached --quiet || git -C "$G" commit -q -m "$1" || echo "setup: couldn't commit the instance; left uncommitted" >&2
+}
+# Keep whatever was there before replacing workflow files, local edits included.
+[ "$mode" = update ] && commit "gandalf: snapshot before update to $VERSION"
+
+# Workflow-owned: replaced wholesale.
+rm -rf "$G/workflow.new"
+cp -R "$SRC/workflow" "$G/workflow.new"
+mkdir -p "$G/workflow.new/skills"
+for s in check pr-text; do
+  [ -d "$SRC/../skills/$s" ] && cp -R "$SRC/../skills/$s" "$G/workflow.new/skills/"
+done
+rm -rf "$G/workflow"
+mv "$G/workflow.new" "$G/workflow"
+chmod +x "$G"/workflow/scripts/*
+
+# Instance-owned: seeded once, never overwritten.
+(cd "$SRC/seed" && find . -type f) | while IFS= read -r f; do
+  if [ ! -e "$G/$f" ]; then
+    mkdir -p "$(dirname "$G/$f")"
+    cp "$SRC/seed/$f" "$G/$f"
+  fi
+done
+mkdir -p "$G/red-book/projects" "$G/red-book/groups"
+
+n=$schema
+while [ "$n" -lt "$SCHEMA" ]; do
+  n=$((n + 1))
+  echo "setup: migrating the red book to schema $n"
+  sh "$SRC/migrations/$n.sh" "$G"
+done
+
+cat > "$G/instance.conf" <<EOF
+# gandalf instance; written by setup, don't edit
+version=$VERSION
+schema=$SCHEMA
+source=$SRC
+source_commit=$(git -C "$SRC" rev-parse --short HEAD 2>/dev/null || echo unknown)
+created=$created
+updated=$today
+EOF
+
+# Command stubs: one user-level set serves every instance on this machine.
+is_stub() { grep -qs 'gandalf-stub' "$1/SKILL.md"; }
+install_stub() { # <stub dir> <target folder>
+  dst="$2/$(basename "$1")"
+  if [ -e "$dst" ] && ! is_stub "$dst"; then
+    echo "setup: skipped $dst: it exists and isn't a gandalf stub" >&2; return 0
+  fi
+  rm -rf "$dst"
+  cp -R "$1" "$dst"
+}
+link_stub() { # <installed stub> <target folder>
+  dst="$2/$(basename "$1")"
+  if [ -e "$dst" ] && [ ! -L "$dst" ] && ! is_stub "$dst"; then
+    echo "setup: skipped $dst: it exists and isn't a gandalf stub" >&2; return 0
+  fi
+  rm -rf "$dst"
+  ln -s "$1" "$dst"
+}
+prune_stubs() { # remove stubs of commands that no longer exist
+  for d in "$1"/gandalf-*; do
+    [ -e "$d" ] || [ -L "$d" ] || continue
+    [ -d "$SRC/stubs/$(basename "$d")" ] && continue
+    { [ -L "$d" ] || is_stub "$d"; } && rm -rf "$d"
+  done
+  return 0
+}
+stub_dirs=
+if [ "$stubs" = yes ]; then
+  if [ -n "${GANDALF_STUBS_DIR:-}" ]; then
+    mkdir -p "$GANDALF_STUBS_DIR"
+    prune_stubs "$GANDALF_STUBS_DIR"
+    for s in "$SRC"/stubs/*/; do install_stub "${s%/}" "$GANDALF_STUBS_DIR"; done
+    stub_dirs=$GANDALF_STUBS_DIR
+  else
+    # Real copies in ~/.agents/skills (Codex, opencode), linked into ~/.claude/skills for Claude Code.
+    mkdir -p "$HOME/.agents/skills"
+    prune_stubs "$HOME/.agents/skills"
+    for s in "$SRC"/stubs/*/; do install_stub "${s%/}" "$HOME/.agents/skills"; done
+    stub_dirs="$HOME/.agents/skills"
+    if [ -d "$HOME/.claude" ]; then
+      mkdir -p "$HOME/.claude/skills"
+      prune_stubs "$HOME/.claude/skills"
+      for s in "$SRC"/stubs/*/; do link_stub "$HOME/.agents/skills/$(basename "$s")" "$HOME/.claude/skills"; done
+      stub_dirs="$stub_dirs, $HOME/.claude/skills"
+    fi
+  fi
+fi
+
+if [ "$mode" = bootstrap ]; then
+  commit "gandalf: bootstrap $VERSION"
+  echo "setup: created the gandalf instance $VERSION in $G"
+else
+  commit "gandalf: update ${from:-?} -> $VERSION"
+  echo "setup: updated $G from ${from:-?} to $VERSION"
+fi
+[ -n "$stub_dirs" ] && echo "setup: command stubs in $stub_dirs"
+
+if [ "$mode" = bootstrap ]; then
+  cat <<EOF
+
+Next:
+- Claude Code asks before editing files outside the repo you're in. To let gandalf write its red book without
+  prompts, add this to ~/.claude/settings.json (merge with what's there):
+    "permissions": {
+      "additionalDirectories": ["$G"],
+      "allow": ["Edit(/$G/red-book/**)", "Write(/$G/red-book/**)", "Bash($G/workflow/scripts/*)"]
+    }
+- Open a repo below $ROOT and run /gandalf-onboard, then /gandalf-intake <task>.
+- Optional: open $G/red-book as an Obsidian vault.
+EOF
+fi
+echo "setup: ok"

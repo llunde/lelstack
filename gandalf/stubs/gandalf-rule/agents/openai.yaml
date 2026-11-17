@@ -1,0 +1,3 @@
+# Codex: only run when explicitly invoked ($gandalf-rule)
+policy:
+  allow_implicit_invocation: false
