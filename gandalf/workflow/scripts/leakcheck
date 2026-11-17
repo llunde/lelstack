@@ -2,7 +2,7 @@
 # Print lines in the given files that name any project or group of this instance: a possible leak.
 # --except <dir> allows the terms of that one project or group (the scope the text belongs to).
 # Usage: leakcheck [--except <project_dir|group_dir>] <file>... ("-" reads stdin).
-#        Exit 0 when clean, 1 when something is found, 2 on an error (a file it can't read).
+#        Exit 0 when clean, 1 when something is found, 2 on an error (a file it can't read, a bad --except).
 #        leakcheck --mask   copies stdin to stdout with every such term replaced by <name>.
 set -eu
 g=$(cd "$(dirname "$0")/../.." && pwd -P)
@@ -10,7 +10,15 @@ brain="$g/red-book"
 mask=no
 [ "${1:-}" = --mask ] && { mask=yes; shift; }
 except=
-if [ "${1:-}" = --except ]; then except=$(cd "$2" && pwd -P); shift 2; fi
+if [ "${1:-}" = --except ]; then
+  except=${2:-}
+  # A group's folder may not exist yet (context prints group_dir from the project note); its name still counts.
+  case $except in
+    */red-book/projects/?*|*/red-book/groups/?*) except=${except%/} ;;
+    *) echo "leakcheck: --except needs a project_dir or group_dir, got '$except'" >&2; exit 2 ;;
+  esac
+  shift 2
+fi
 [ $# -ge 1 ] || [ "$mask" = yes ] || { echo "usage: leakcheck [--except <dir>] <file>..." >&2; exit 2; }
 for f in "$@"; do
   [ "$f" = - ] || [ -r "$f" ] || { echo "leakcheck: can't read $f" >&2; exit 2; }
@@ -19,23 +27,41 @@ done
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
-# Terms that identify a project or group: its folder name, path segments, remote org and repo, group.
-# Generic folder names (work, repos, clients, …) are dropped below: they name nothing.
-terms_of() {
+# Terms that identify a project or group: the segments of its folder name, path and remote, and its group.
+# Group names are marked "=": they always count. Other terms are dropped when they're hosts, URL parts or
+# generic folder and repo names (work, clients, backend, docs, …): those name nothing, and masking them
+# would garble generic lessons.
+terms_of() { # <project_dir|group_dir>, which may not exist
   name=$(basename "$1")
-  echo "$name"
+  case $1 in
+    */groups/*) echo "=$name" ;;
+    *) printf '%s\n' "$name" | awk '{gsub(/--/, "\n"); print}' ;;
+  esac
   awk 'NR==1 && $0!="---" {exit} NR>1 && $0=="---" {exit}
-    NR>1 && /^(path|remote|group):/ {sub(/^[a-z]+: */, ""); print}' "$1/$name.md" 2>/dev/null |
-    sed 's#\.git$##' | tr '/' '\n'
+    {gsub(/["\047]/, "")}
+    NR>1 && /^group:/ {sub(/^group: */, ""); print "=" $0}
+    NR>1 && /^(path|remote):/ {sub(/^[a-z]+: */, ""); sub(/\.git$/, ""); gsub(/[\/:]/, "\n"); print}' \
+    "$1/$name.md" 2>/dev/null || true
 }
 for d in "$brain"/projects/*/ "$brain"/groups/*/; do
   [ -d "$d" ] && terms_of "${d%/}"
 done > "$tmp/all"
 : > "$tmp/except"
 [ -n "$except" ] && terms_of "$except" > "$tmp/except"
-generic='github\.com|dev\.azure\.com|gitlab\.com|ssh\.dev\.azure\.com|work|repos|code|source|projects|clients|customers|apps|services|libs|packages|personal|private|priv|home|users|documents|workspace|github|gitlab|azure'
-grep -E '^[^:]{4,}$' "$tmp/all" | grep -vixE "$generic" |
-  grep -vixF -f "$tmp/except" | sort -u > "$tmp/terms" || true
+generic=$(echo 'http https ssh git v3 _git github gitlab azure bitbucket
+  work repo repos code src source projects project clients client customers customer apps app services service
+  libs lib packages pkg personal private priv home users documents workspace dev
+  api web www site website backend frontend server mobile ios android desktop cli ui db docs doc infra
+  ops deploy tools scripts core common shared config test tests main' | tr '\n' ' ')
+# No pipe into sort: a failing awk must stop the script, not leave an empty term list that reads as clean.
+awk -v generic="$generic" '
+  BEGIN {n=split(generic, a, / +/); for (i=1; i<=n; i++) gen[a[i]]=1}
+  {strong=sub(/^=/, ""); t=tolower($0); gsub(/^ +| +$/, "", t)}
+  length(t) < 2 {next}
+  !strong && (t in gen || t ~ /@/ || t ~ /\.(com|org|net|io)$/) {next}
+  FILENAME==ARGV[1] {skip[t]=1; next}
+  !(t in skip) {print t}' "$tmp/except" "$tmp/all" > "$tmp/terms.raw"
+sort -u "$tmp/terms.raw" > "$tmp/terms"
 
 if [ "$mask" = yes ]; then
   [ -s "$tmp/terms" ] || { cat; exit 0; } # awk's NR==FNR would read stdin as the terms

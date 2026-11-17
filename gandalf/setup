@@ -41,19 +41,23 @@ if git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   exclude=$(git -C "$ROOT" rev-parse --path-format=absolute --git-path info/exclude)
   line="${G#"$top"}/"
   mkdir -p "$(dirname "$exclude")"
-  grep -qxF "$line" "$exclude" 2>/dev/null || echo "$line" >> "$exclude"
-  echo "setup: $ROOT is inside the git repo $top; added $line to its .git/info/exclude"
+  if ! grep -qxF "$line" "$exclude" 2>/dev/null; then
+    echo "$line" >> "$exclude"
+    echo "setup: $ROOT is inside the git repo $top; added $line to its .git/info/exclude"
+  fi
 fi
 
 mkdir -p "$G"
 # A local repo for the red book's history. It has no remote and is never pushed.
 [ -d "$G/.git" ] || git -C "$G" init -q
-commit() {
-  git -C "$G" add -A
-  git -C "$G" diff --cached --quiet || git -C "$G" commit -q -m "$1" || echo "setup: couldn't commit the instance; left uncommitted" >&2
+commit() { # <message> <path>...: only these, so another session's unfinished red-book edits stay out
+  msg=$1; shift
+  git -C "$G" add -A -- "$@"
+  git -C "$G" diff --cached --quiet -- "$@" ||
+    git -C "$G" commit -q -m "$msg" -- "$@" || echo "setup: couldn't commit the instance; left uncommitted" >&2
 }
-# Keep whatever was there before replacing workflow files, local edits included.
-[ "$mode" = update ] && commit "gandalf: snapshot before update to $VERSION"
+# Keep the workflow files as they were before replacing them, local edits included.
+[ "$mode" = update ] && [ -e "$G/workflow" ] && commit "gandalf: snapshot before update to $VERSION" "$G/workflow"
 
 # Workflow-owned: replaced wholesale.
 rm -rf "$G/workflow.new"
@@ -66,13 +70,15 @@ rm -rf "$G/workflow"
 mv "$G/workflow.new" "$G/workflow"
 chmod +x "$G"/workflow/scripts/*
 
-# Instance-owned: seeded once, never overwritten.
-(cd "$SRC/seed" && find . -type f) | while IFS= read -r f; do
+# Instance-owned: seeded once, never overwritten. The seeded files are committed with this run.
+touched=$(printf '%s\n' "$G/workflow" "$G/instance.conf")
+seeded=$( (cd "$SRC/seed" && find . -type f) | while IFS= read -r f; do
   if [ ! -e "$G/$f" ]; then
     mkdir -p "$(dirname "$G/$f")"
     cp "$SRC/seed/$f" "$G/$f"
+    printf '%s\n' "$G/${f#./}"
   fi
-done
+done)
 mkdir -p "$G/red-book/projects" "$G/red-book/groups"
 
 n=$schema
@@ -81,6 +87,8 @@ while [ "$n" -lt "$SCHEMA" ]; do
   echo "setup: migrating the red book to schema $n"
   sh "$SRC/migrations/$n.sh" "$G"
 done
+# A migration can rewrite any of the red book, and a bootstrap has nothing else in it: commit it all.
+{ [ "$mode" = bootstrap ] || [ "$schema" -lt "$SCHEMA" ]; } && touched=$G
 
 cat > "$G/instance.conf" <<EOF
 # gandalf instance; written by setup, don't edit
@@ -94,8 +102,8 @@ EOF
 
 # Command stubs: one user-level set serves every instance on this machine.
 is_stub() { grep -qs 'gandalf-stub' "$1/SKILL.md"; }
-ours() { # <path> <link target setup would use>: a gandalf stub, or a link setup made (even a broken one)
-  is_stub "$1" || { [ -L "$1" ] && [ "$(readlink "$1")" = "$2" ]; }
+ours() { # <path> <link target setup would use>: a gandalf stub, or a broken link setup made
+  is_stub "$1" || { [ -L "$1" ] && [ ! -e "$1" ] && [ "$(readlink "$1")" = "$2" ]; }
 }
 install_stub() { # <stub dir> <target folder>
   dst="$2/$(basename "$1")"
@@ -107,6 +115,7 @@ install_stub() { # <stub dir> <target folder>
 }
 link_stub() { # <installed stub> <target folder>
   dst="$2/$(basename "$1")"
+  is_stub "$1" || return 0 # install_stub skipped it: the user's own skill, not ours to link
   if { [ -e "$dst" ] || [ -L "$dst" ]; } && ! ours "$dst" "$1"; then
     echo "setup: skipped $dst: it exists and isn't a gandalf stub" >&2; return 0
   fi
@@ -143,11 +152,17 @@ if [ "$stubs" = yes ]; then
   fi
 fi
 
+# One path per line in $touched and $seeded: split on newlines only.
+old_ifs=$IFS; IFS='
+'; set -f
+# shellcheck disable=SC2086 # word splitting on newlines is intended
+set -- $touched $seeded
+IFS=$old_ifs; set +f
 if [ "$mode" = bootstrap ]; then
-  commit "gandalf: bootstrap $VERSION"
+  commit "gandalf: bootstrap $VERSION" "$@"
   echo "setup: created the gandalf instance $VERSION in $G"
 else
-  commit "gandalf: update ${from:-?} -> $VERSION"
+  commit "gandalf: update ${from:-?} -> $VERSION" "$@"
   echo "setup: updated $G from ${from:-?} to $VERSION"
 fi
 [ -n "$stub_dirs" ] && echo "setup: command stubs in $stub_dirs"
