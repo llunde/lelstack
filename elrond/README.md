@@ -47,7 +47,7 @@ flowchart TD
     style MAINT fill:#F8FAFC,stroke:#E2E8F0,color:#475569
 ```
 
-<sub>Colours in the diagrams: 🟧 you · 🟦 agents · 🟩 checks and done · 🟪 git · 🟥 parked or stopped.</sub>
+<sub>Colours in the diagrams: 🟧 you · 🟦 agents (darkest: the Orchestrator) · 🟩 checks and done · 🟪 git · 🟥 parked or stopped.</sub>
 
 ---
 
@@ -153,8 +153,7 @@ flowchart LR
     classDef done fill:#ECFDF5,stroke:#10B981,stroke-width:1.5px,color:#064E3B
     classDef lead fill:#312E81,stroke:#312E81,stroke-width:1px,color:#FFFFFF
     linkStyle default stroke-width:1.5px
-    class PL,EX,RV,RS agent
-    class HP check
+    class PL,EX,RV,RS,HP agent
     class FS git
     class O lead
     style W fill:#F8FAFC,stroke:#E2E8F0,color:#475569
@@ -383,12 +382,12 @@ flowchart TD
 
 - **Quick status:** `workflow/plans/index.md` (plans and phases) and `workflow/questions/index.md`. Rows from closed phases are in the `archive.md` next to each.
 - **What was built:** the progress notes in `workflow/progress/`, one per plan.
-- **Git history:** the workflow repo (`git --git-dir=.git/workflow log`) has one commit per plan (or per parallel slice), tagged `(plan NNN)`, `(audit)` and so on, each naming the app commit it made. Your project's history has plain commit messages only.
+- **Git history:** the workflow repo (`git --git-dir=.git/workflow log`) has one commit per plan (a parallel plan adds one per unit, plus its dispatch, Contract and close), tagged `(plan NNN)`, `(audit)` and so on, each naming the app commit it made, if any. Your project's history has plain commit messages only.
 - **Obsidian (optional):** open `workflow/` as a vault. You get a readable graph (overview → phases → plans → progress, with decisions and questions attached) and a status dashboard (`workflow/dashboard.base`).
 
 ### Running in parallel
 
-Most plans run one at a time. When work splits cleanly (separate files, enough work in each part), the Orchestrator runs parts in parallel, each in its own git worktree. Anything the parts share (the plan's Contract, and edits to conflict hotspots) lands on `main` first. Each finished unit then merges the latest `main` into its own branch, so conflicts are resolved, checked and reviewed inside the worktree, and is squash-merged as one app commit with a plain message. All merging happens locally, and only one branch (`main` by default) is ever pushed, so you get no pull requests and no extra branches on the remote. The plan's close is a workflow-only commit, and the plan numbers in the graph below live only in the workflow repo.
+Most plans run one at a time. When work splits cleanly (separate files, enough work in each part), the Orchestrator runs parts in parallel, each in its own git worktree. Anything the parts share (the plan's Contract, and edits to conflict hotspots) lands on `main` first. Each finished unit then merges the latest `main` into its own branch, so conflicts are resolved, checked and reviewed inside the worktree. Then it's squash-merged as one app commit with a plain message. All merging happens locally, and only one branch (`main` by default) is ever pushed, so you get no pull requests and no extra branches on the remote. The plan's close is a workflow-only commit, and the plan numbers in the graph below live only in the workflow repo.
 
 ```mermaid
 %%{init: {"fontFamily": "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif", "theme": "base", "themeVariables": {"fontFamily": "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "13px", "git0": "#6366F1", "git1": "#F59E0B", "git2": "#10B981", "gitBranchLabel0": "#FFFFFF", "gitBranchLabel1": "#FFFFFF", "gitBranchLabel2": "#FFFFFF", "commitLabelColor": "#334155", "commitLabelBackground": "#F1F5F9", "commitLabelFontSize": "12px"}, "gitGraph": {"mainBranchName": "main", "showCommitLabel": true, "rotateCommitLabel": true}}}%%
