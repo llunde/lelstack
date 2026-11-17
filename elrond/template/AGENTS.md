@@ -1,6 +1,6 @@
 # AGENTS.md — <project>
 
-The operating contract for building <project>. Read it in full at the start of every session and after any context compaction. `workflow/docs/` says **what** to build; this file says **how**. Workflow: autonomous-build-workflow (`workflow/WORKFLOW.md`).
+The operating contract for building <project>. Read it in full at the start of every session and after any context compaction. `workflow/docs/` says **what** to build; this file says **how**. Workflow: elrond (`workflow/WORKFLOW.md`).
 
 ## 1. Project
 <One paragraph: what it is, for whom, platform.> Source of truth: `workflow/docs/brief.md` → `workflow/docs/00-overview.md` → phase docs.
