@@ -19,7 +19,7 @@ At most three bullets, usually fewer, often none. Only what a future session wou
 ## Instance (`/gandalf-retro instance`, anywhere below the root)
 This is the only command that looks across projects, and it only ever sees the scrubbed `gandalf:` lines.
 1. `workflow/GANDALF.md` §2 Start, steps 1 and 2. Read `red-book/gandalf.md`, `lessons.md` and `proposals.md`.
-2. `workflow/scripts/retro-lines --since <last_retro from gandalf.md>` prints the `gandalf:` lines from every session with their dates, without project names. Never open project or group files.
+2. `workflow/scripts/retro-lines --since <last_retro from gandalf.md>` prints the `gandalf:` lines from every session updated since then, with the date, without project names. A session resumed after the last retro shows its older lines again: they may already be in `lessons.md`. Never open project or group files.
 3. **Lessons:** a lesson seen in two or more sessions, or once at high cost, goes into `lessons.md` (merge with an existing one rather than adding). Drop lessons that no longer hold. At most 30 bullets.
 4. **Proposals:** a lesson that needs gandalf itself to change goes into `proposals.md` as a new entry: the date, the file under `lelstack/gandalf/` and the exact edit (a short diff or the new text), the evidence (how many sessions, dates), `status: open`. Never edit lelstack: the human applies proposals there.
 5. Run `workflow/scripts/leakcheck` on `lessons.md` and `proposals.md`; fix every hit.

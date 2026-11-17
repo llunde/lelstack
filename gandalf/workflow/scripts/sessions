@@ -6,10 +6,11 @@ dir=${1:?usage: sessions <project_dir> [--all]}
 all=${2:-}
 out=$(ls -1r "$dir/sessions" 2>/dev/null | grep '\.md$' | while IFS= read -r n; do
   awk -v all="$all" -v name="$n" '
-    NR==1 && $0!="---" {exit}
-    NR>1 && $0=="---" {exit}
-    NR>1 {i=index($0, ":"); if (i) {k=substr($0, 1, i-1); v=substr($0, i+1); sub(/^ +/, "", v); m[k]=v}}
+    NR==1 && $0=="---" {fm=1; next}
+    NR==1 || $0=="---" {exit}
+    {i=index($0, ":"); if (i) {k=substr($0, 1, i-1); v=substr($0, i+1); sub(/^ +/, "", v); m[k]=v}}
     END {
+      if (!fm || m["status"]=="") exit # not a session file, or a half-written one
       if (all!="--all" && (m["status"]=="done" || m["status"]=="abandoned")) exit
       printf "%s | %s | step %s | branch %s | updated %s | next: %s\n", name, m["status"], m["step"], m["branch"], m["updated"], m["next"]
     }' "$dir/sessions/$n"

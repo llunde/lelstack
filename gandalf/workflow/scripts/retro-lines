@@ -1,5 +1,8 @@
 #!/bin/sh
-# Print the "- gandalf:" lessons from every session, with the session's date. Project and group names are masked.
+# Print the "- gandalf:" lessons from every session, with the date the session was last updated.
+# Project and group names are masked.
+# --since keeps sessions updated on or after that day, so a session resumed after a retro is read again;
+# its older lessons then come round twice, and the retro merges them.
 # Usage: retro-lines [--since YYYY-MM-DD]
 set -eu
 g=$(cd "$(dirname "$0")/../.." && pwd -P)
@@ -8,6 +11,9 @@ since=0000-00-00
 for f in "$g"/red-book/projects/*/sessions/*.md; do
   [ -f "$f" ] && printf '%s\n' "$f"
 done | while IFS= read -r f; do
-  d=$(basename "$f" | cut -c1-10)
+  # The frontmatter's updated: date; the file name's start date if it has none.
+  d=$(awk 'NR==1 && $0!="---" {exit} NR>1 && $0=="---" {exit}
+    NR>1 && /^updated: *[0-9]/ {sub(/^updated: */, ""); print substr($0, 1, 10); exit}' "$f")
+  [ -n "$d" ] || d=$(basename "$f" | cut -c1-10)
   awk -v d="$d" -v since="$since" 'd >= since && /^- gandalf:/ {sub(/^- gandalf: */, ""); print d ": " $0}' "$f"
 done | sort | "$(dirname "$0")/leakcheck" --mask

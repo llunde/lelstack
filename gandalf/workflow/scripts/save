@@ -1,17 +1,26 @@
 #!/bin/sh
-# Commit everything in the instance repo: the red book's local history. Only ever this repo, never a project.
+# Commit the instance repo: the red book's local history. Only ever this repo, never a project.
+# With paths, commits only those (what this command changed), so another session's unfinished edits stay
+# out of this commit; without, commits everything.
 # Never pushes: the instance repo has no remote. Retries while another session holds git's lock.
-# Usage: save "<message>"
+# Usage: save "<message>" [<path>...]
 set -eu
-msg=${1:?usage: save "<message>"}
+msg=${1:?usage: save "<message>" [<path>...]}
+shift
 g=$(cd "$(dirname "$0")/../.." && pwd -P)
 [ -d "$g/.git" ] || { echo "save: the instance has no git repo; skipped"; exit 0; }
+[ $# -ge 1 ] || set -- "$g"
+err=$(mktemp)
+trap 'rm -f "$err"' EXIT
 i=0
 while :; do
-  if git -C "$g" add -A && { git -C "$g" diff --cached --quiet || git -C "$g" commit -q -m "$msg"; }; then
+  if git -C "$g" add -A -- "$@" 2>"$err" &&
+    { git -C "$g" diff --cached --quiet -- "$@" || git -C "$g" commit -q -m "$msg" -- "$@" 2>"$err"; }; then
     echo "save: ok"; exit 0
   fi
+  # Only another session holding the lock is worth waiting for.
+  if ! grep -q 'index\.lock' "$err"; then cat "$err" >&2; echo "save: failed" >&2; exit 1; fi
   i=$((i + 1))
-  [ "$i" -lt 5 ] || { echo "save: failed after $i tries" >&2; exit 1; }
+  [ "$i" -lt 5 ] || { cat "$err" >&2; echo "save: failed after $i tries" >&2; exit 1; }
   sleep 2
 done

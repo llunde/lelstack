@@ -35,7 +35,9 @@ esac
 case $repo in
   "$g"|"$g"/*) echo "repo="; exit 0 ;;
   "$root"|"$root"/*) ;;
-  *) echo "error=repo $repo is outside the instance root $root"; exit 1 ;;
+  # The root sits inside a bigger repo (setup allows that): a folder of that repo isn't a project.
+  *) case $root in "$repo"/*) echo "repo="; exit 0 ;; esac
+     echo "error=repo $repo is outside the instance root $root"; exit 1 ;;
 esac
 rel=${repo#"$root"}; rel=${rel#/}
 [ -n "$rel" ] || rel=$(basename "$repo")

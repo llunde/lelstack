@@ -1,7 +1,8 @@
 #!/bin/sh
 # Print lines in the given files that name any project or group of this instance: a possible leak.
 # --except <dir> allows the terms of that one project or group (the scope the text belongs to).
-# Usage: leakcheck [--except <project_dir|group_dir>] <file>... ("-" reads stdin). Exit 1 when something is found.
+# Usage: leakcheck [--except <project_dir|group_dir>] <file>... ("-" reads stdin).
+#        Exit 0 when clean, 1 when something is found, 2 on an error (a file it can't read).
 #        leakcheck --mask   copies stdin to stdout with every such term replaced by <name>.
 set -eu
 g=$(cd "$(dirname "$0")/../.." && pwd -P)
@@ -11,11 +12,15 @@ mask=no
 except=
 if [ "${1:-}" = --except ]; then except=$(cd "$2" && pwd -P); shift 2; fi
 [ $# -ge 1 ] || [ "$mask" = yes ] || { echo "usage: leakcheck [--except <dir>] <file>..." >&2; exit 2; }
+for f in "$@"; do
+  [ "$f" = - ] || [ -r "$f" ] || { echo "leakcheck: can't read $f" >&2; exit 2; }
+done
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
 # Terms that identify a project or group: its folder name, path segments, remote org and repo, group.
+# Generic folder names (work, repos, clients, …) are dropped below: they name nothing.
 terms_of() {
   name=$(basename "$1")
   echo "$name"
@@ -28,17 +33,30 @@ for d in "$brain"/projects/*/ "$brain"/groups/*/; do
 done > "$tmp/all"
 : > "$tmp/except"
 [ -n "$except" ] && terms_of "$except" > "$tmp/except"
-grep -E '^[^:]{4,}$' "$tmp/all" | grep -vxE 'github\.com|dev\.azure\.com|gitlab\.com|ssh\.dev\.azure\.com' |
-  grep -vxF -f "$tmp/except" | sort -u > "$tmp/terms" || true
+generic='github\.com|dev\.azure\.com|gitlab\.com|ssh\.dev\.azure\.com|work|repos|code|source|projects|clients|customers|apps|services|libs|packages|personal|private|priv|home|users|documents|workspace|github|gitlab|azure'
+grep -E '^[^:]{4,}$' "$tmp/all" | grep -vixE "$generic" |
+  grep -vixF -f "$tmp/except" | sort -u > "$tmp/terms" || true
 
 if [ "$mask" = yes ]; then
-  # Case-insensitive; terms are at least 4 characters, so no word-boundary check.
-  awk 'NR==FNR {t[++n]=tolower($0); next}
-    {for (k=1; k<=n; k++) {l=tolower($0); while ((i=index(l, t[k])) > 0) {
-      $0=substr($0, 1, i-1) "<name>" substr($0, i+length(t[k])); l=tolower($0)}} print}' "$tmp/terms" -
+  [ -s "$tmp/terms" ] || { cat; exit 0; } # awk's NR==FNR would read stdin as the terms
+  # Case-insensitive whole words, like grep -iw below. Matches become \001 while scanning, so a term
+  # can never match inside an inserted <name>, and each scan moves past what it replaced.
+  awk 'function w(c) {return c ~ /[A-Za-z0-9_]/}
+    NR==FNR {t[++n]=tolower($0); next}
+    {for (k=1; k<=n; k++) {out=""; rest=$0; L=length(t[k])
+      while ((i=index(tolower(rest), t[k])) > 0) {
+        b=(i > 1) ? substr(rest, i-1, 1) : substr(out, length(out), 1); a=substr(rest, i+L, 1)
+        if (w(b) || w(a)) {out=out substr(rest, 1, i); rest=substr(rest, i+1)}
+        else {out=out substr(rest, 1, i-1) "\001"; rest=substr(rest, i+L)}}
+      $0=out rest}
+     gsub(/\001/, "<name>"); print}' "$tmp/terms" -
   exit 0
 fi
-if [ -s "$tmp/terms" ] && grep -n -i -w -F -f "$tmp/terms" "$@"; then
-  exit 1
-fi
-echo "leakcheck: clean"
+[ -s "$tmp/terms" ] || { echo "leakcheck: clean"; exit 0; }
+rc=0
+grep -n -i -w -F -f "$tmp/terms" "$@" || rc=$?
+case $rc in
+  0) exit 1 ;;
+  1) echo "leakcheck: clean" ;;
+  *) echo "leakcheck: grep failed ($rc)" >&2; exit 2 ;;
+esac

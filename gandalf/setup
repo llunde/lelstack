@@ -22,6 +22,11 @@ conf() { sed -n "s/^$1=//p" "$G/instance.conf" 2>/dev/null | head -n 1; }
 
 if [ -f "$G/instance.conf" ]; then
   mode=update; from=$(conf version); schema=$(conf schema); created=$(conf created)
+  case $schema in
+    ''|*[!0-9]*)
+      echo "setup: $G/instance.conf has no valid schema= line ('$schema'); set it to the red book's schema and re-run" >&2
+      exit 1 ;;
+  esac
   if [ "$schema" -gt "$SCHEMA" ]; then
     echo "setup: this instance's red book is schema $schema, newer than this gandalf's $SCHEMA; use a newer lelstack" >&2
     exit 1
@@ -89,6 +94,9 @@ EOF
 
 # Command stubs: one user-level set serves every instance on this machine.
 is_stub() { grep -qs 'gandalf-stub' "$1/SKILL.md"; }
+ours() { # <path> <link target setup would use>: a gandalf stub, or a link setup made (even a broken one)
+  is_stub "$1" || { [ -L "$1" ] && [ "$(readlink "$1")" = "$2" ]; }
+}
 install_stub() { # <stub dir> <target folder>
   dst="$2/$(basename "$1")"
   if [ -e "$dst" ] && ! is_stub "$dst"; then
@@ -99,17 +107,17 @@ install_stub() { # <stub dir> <target folder>
 }
 link_stub() { # <installed stub> <target folder>
   dst="$2/$(basename "$1")"
-  if [ -e "$dst" ] && [ ! -L "$dst" ] && ! is_stub "$dst"; then
+  if { [ -e "$dst" ] || [ -L "$dst" ]; } && ! ours "$dst" "$1"; then
     echo "setup: skipped $dst: it exists and isn't a gandalf stub" >&2; return 0
   fi
   rm -rf "$dst"
   ln -s "$1" "$dst"
 }
-prune_stubs() { # remove stubs of commands that no longer exist
+prune_stubs() { # <folder> [<folder its links point into>]: remove stubs of commands that no longer exist
   for d in "$1"/gandalf-*; do
     [ -e "$d" ] || [ -L "$d" ] || continue
     [ -d "$SRC/stubs/$(basename "$d")" ] && continue
-    { [ -L "$d" ] || is_stub "$d"; } && rm -rf "$d"
+    ours "$d" "${2:-}/$(basename "$d")" && rm -rf "$d"
   done
   return 0
 }
@@ -128,7 +136,7 @@ if [ "$stubs" = yes ]; then
     stub_dirs="$HOME/.agents/skills"
     if [ -d "$HOME/.claude" ]; then
       mkdir -p "$HOME/.claude/skills"
-      prune_stubs "$HOME/.claude/skills"
+      prune_stubs "$HOME/.claude/skills" "$HOME/.agents/skills"
       for s in "$SRC"/stubs/*/; do link_stub "$HOME/.agents/skills/$(basename "$s")" "$HOME/.claude/skills"; done
       stub_dirs="$stub_dirs, $HOME/.claude/skills"
     fi
