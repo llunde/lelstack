@@ -4,7 +4,7 @@
 # GANDALF_STUBS_DIR=<dir> installs the command stubs there instead of the user-level skill folders.
 set -eu
 
-SCHEMA=1 # red-book layout version; raise it together with a new migrations/<n>.sh
+SCHEMA=2 # red-book layout version; raise it together with a new migrations/<n>.sh
 
 [ $# -ge 1 ] || { echo "usage: setup <workspace root> [--no-stubs]" >&2; exit 2; }
 SRC=$(cd "$(dirname "$0")" && pwd -P)
@@ -202,9 +202,11 @@ Next:
     "permissions": {
       "additionalDirectories": ["$G"],
       "allow": ["Edit(/$G/red-book/**)", "Write(/$G/red-book/**)", "Bash($G/workflow/scripts/*)"]
-    }
+    },
+    "attribution": { "commit": "", "pr": "" }
+  The last line stops Claude Code adding its own attribution to commits and PRs (gandalf asks for none).
 - Open a repo below $ROOT and run /gandalf-onboard, then /gandalf-intake <task>.
-- Optional: open $G/red-book as an Obsidian vault.
+- Optional: open $G/red-book as an Obsidian vault; the graph comes colour-coded.
 EOF
 fi
 echo "setup: ok"

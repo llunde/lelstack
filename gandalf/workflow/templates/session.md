@@ -3,6 +3,7 @@ type: session
 project: "[[projects/<slug>/<slug>]]"
 status: active
 step: tree
+size:
 issue: <key or empty>
 branch:
 base:
@@ -15,18 +16,18 @@ next: <what happens next, one line>
 ---
 # <task in a few words>
 
-<!-- status: active | waiting | done | abandoned · step: tree | branch | understand | plan | implement | verify | review | text | deliver | wrap-up -->
+<!-- status: active | waiting | done | abandoned · size: small | medium | large · step: tree | branch | understand | plan | implement | verify | review | text | deliver | wrap-up -->
 
 ## Task
-<verbatim input, credentials and personal data removed>
+<while working: the input verbatim, credentials and personal data removed. At wrap-up: what was asked, ≤3 lines>
 
 ## Plan
+<while working only; removed at wrap-up>
 
 ## Log
-<- HH:MM step: what happened, one line each>
-
-## Review
+<- HH:MM step: what happened, a few words each>
 
 ## Outcome
+<≤3 lines: what changed, where it stands>
 
 ## Retro

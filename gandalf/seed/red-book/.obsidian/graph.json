@@ -1,0 +1,22 @@
+{
+  "collapse-filter": true,
+  "search": "",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": true,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [{"query": "[status:active] OR [status:waiting]", "color": {"a": 1, "rgb": 16347926}}, {"query": "[type:session]", "color": {"a": 1, "rgb": 9741240}}, {"query": "[type:project]", "color": {"a": 1, "rgb": 6514417}}, {"query": "[type:group]", "color": {"a": 1, "rgb": 11032055}}, {"query": "[type:note] OR path:\"/notes/\"", "color": {"a": 1, "rgb": 1357990}}, {"query": "[type:rules]", "color": {"a": 1, "rgb": 16007006}}, {"query": "[type:core] OR [type:lessons] OR [type:proposals]", "color": {"a": 1, "rgb": 1096065}}],
+  "collapse-display": true,
+  "showArrow": true,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": true,
+  "centerStrength": 0.5,
+  "repelStrength": 12,
+  "linkStrength": 1,
+  "linkDistance": 120,
+  "scale": 1,
+  "close": false
+}

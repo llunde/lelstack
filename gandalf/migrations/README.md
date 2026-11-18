@@ -7,4 +7,4 @@
 - Never deletes content: move or rewrite it. `setup` commits the red book before migrating (and stops if it can't), then commits the migration on its own, so `git show` on that commit in the instance folder reviews just the migration.
 - POSIX sh, no dependencies beyond what `setup` uses.
 
-There are none yet: schema 1 is the first layout.
+- `2.sh`: notes link up to one parent (project → group or `gandalf`, group → `gandalf`), and the Obsidian graph gets its colour groups if it has none.

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Print the "- gandalf:" lessons from every session's "## Retro" section, with the date the session was last
-# updated. Lines elsewhere (the verbatim task text, the log) are never lessons. Project and group names are masked.
+# updated. Lines elsewhere (the task text, the log) are never lessons. Project and group names are masked.
 # --since keeps sessions updated on or after that day, so a session resumed after a retro is read again;
 # its older lessons then come round twice, and the retro merges them.
 # Usage: retro-lines [--since YYYY-MM-DD]

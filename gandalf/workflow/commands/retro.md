@@ -9,9 +9,9 @@ At most three bullets, usually fewer, often none. Only what a future session wou
 - Nothing worth keeping: write `## Retro` with `none`.
 
 ## Project (`/gandalf-retro` inside a repo)
-1. `workflow/GANDALF.md` §2 Start. Read the project's `notes/`, and the sessions changed since `last_retro:` in the project note (all if empty): their Log, Review and Retro sections.
+1. `workflow/GANDALF.md` §2 Start. Read the project's `notes/`, and the sessions changed since `last_retro:` in the project note (all if empty): their Log (the `review:` lines say what got fixed) and Retro sections.
 2. **Consolidate the note:** merge duplicates, check doubtful facts against the repo and fix or drop them, move detail to `notes/`, drop notes nothing links to and nobody needs. Back under budget.
-3. **Patterns:** the same kind of review finding in several sessions → propose a project rule; commands that keep failing → fix the note; skipped findings that came back → say so.
+3. **Patterns:** the same kind of fix in several sessions' `review:` lines → propose a project rule; commands that keep failing → fix the note.
 4. Sessions left `active` or `waiting` that look finished or dead: ask, then set `done` or `abandoned`.
 5. Show the proposed rules and ask; add the accepted ones as in `workflow/commands/rule.md`. Apply the note edits directly.
 6. Set `last_retro:` to today, commit the instance (`workflow/GANDALF.md` §10) as `retro(<slug>)`, and report in at most ten lines.

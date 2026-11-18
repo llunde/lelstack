@@ -20,6 +20,14 @@ echo "gandalf=$g"
 echo "brain=$brain"
 grep -E '^(version|schema|source)=' "$g/instance.conf" || true
 [ -f "$brain/rules.md" ] && echo "rules_global=$brain/rules.md"
+# The skills gandalf's steps name: user-level installs first, then the pinned copy (GANDALF.md §7).
+for s in check pr-text; do
+  p=
+  for d in "$HOME/.agents/skills" "$HOME/.claude/skills" "$HOME/.codex/skills" "$g/workflow/skills"; do
+    [ -f "$d/$s/SKILL.md" ] && { p="$d/$s/SKILL.md"; break; }
+  done
+  echo "skill_$(printf %s "$s" | tr - _)=$p"
+done
 
 top=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || { echo "repo="; exit 0; }
 # A linked worktree belongs to its main repo's project.

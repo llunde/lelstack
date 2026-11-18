@@ -110,9 +110,12 @@ A session runs inside a repo, so the instance is outside its working directory a
       "Write(//Users/you/projects/.gandalf/red-book/**)",
       "Bash(/Users/you/projects/.gandalf/workflow/scripts/*)"
     ]
-  }
+  },
+  "attribution": { "commit": "", "pr": "" }
 }
 ```
+
+`attribution` stops Claude Code adding its "Generated with Claude Code" line to PRs and its `Co-Authored-By` trailer to commits. Gandalf asks for neither, but the harness's own default can win over a workflow file, so the setting is the reliable switch.
 
 The `//` in `Edit` and `Write` rules marks an absolute path. The scripts are small helpers: find the project, list sessions, read note frontmatter, scan for leaks, and `save`, which commits the instance repo (only that one, never a project, never pushed). Gandalf runs `save` as a script so it works even where your permission rules deny `git commit`; if you'd rather it didn't, add a deny rule for `Bash(<root>/.gandalf/workflow/scripts/save*)` and the instance just stays uncommitted.
 
@@ -125,7 +128,7 @@ claude
 Onboarding reads the repo, runs its build and lint, asks what it can't work out, and writes the project note to `~/projects/.gandalf/red-book/projects/<client>--<repo>/`. Then try a small task with `/gandalf-intake <task>`.
 
 ### 5. Optional
-- **Obsidian:** open `~/projects/.gandalf/red-book` as a vault for the graph and `dashboard.base` (open sessions across projects).
+- **Obsidian:** open `~/projects/.gandalf/red-book` as a vault for the graph and `dashboard.base` (open sessions across projects). See [The graph](#the-graph).
 - **Your own `check` and `pr-text`:** gandalf prefers user-level installs over its pinned copies. To use the lelstack copies everywhere, link them: [../skills/README.md](../skills/README.md#linking-check-and-pr-text-from-lelstack).
 - **ponytail, ponytail-review, caveman:** used when installed, skipped when not ([third-party skills](../skills/README.md#third-party-skills)).
 
@@ -297,8 +300,26 @@ flowchart LR
 - **No secrets.** Credentials, connection strings and personal data never go in.
 - **Small on purpose.** Project notes stay under about 80 lines and only the entry note is loaded by default. Retro prunes what's stale.
 - **Groups.** Onboarding suggests one from the parent folder (`<root>/<client>/<repo>`) or the remote's organisation. Group rules and notes apply to all its projects.
+- **Short sessions.** While a task runs, its session file holds the task text and the plan, so a crash or a usage limit can be resumed. At wrap-up it's cut down to the record: properties, what was asked in a few lines, a short log, the outcome, retro lessons. The plan lives on in the diff and the PR, review findings in the report you got.
 - **History.** Each command ends by committing the instance repo (`workflow/scripts/save`), so `git log` in `<root>/.gandalf` shows what changed and when. It has no remote and is never pushed.
 
+
+### The graph
+Every note links up to one parent and only parents link down, so the graph is a tree rather than a hairball: `gandalf` in the middle, groups around it, projects around their group (or straight on `gandalf`), and each project's sessions, notes and rules around it. Nothing links sideways. Over time it becomes a map of all your work.
+
+setup seeds the vault's graph colours (Settings → Graph → Groups; an existing vault gets them on update if it has none):
+
+| Colour | Notes |
+|---|---|
+| 🟧 orange | open sessions (`active`, `waiting`) |
+| ⬜ grey | finished sessions |
+| 🟦 indigo | projects |
+| 🟪 purple | groups |
+| 🩵 teal | project notes (`notes/`) |
+| 🟥 rose | rules |
+| 🟩 green | the core: `gandalf`, `lessons`, `proposals` |
+
+For a calmer view, filter with `-[status:done] -[status:abandoned]` to show only live work, or open the local graph on one project note.
 ## Updating
 
 Run `/gandalf-update` from any repo below the root, or `<lelstack>/gandalf/setup <workspace root>` again. `workflow/` is replaced; the red book is never overwritten, only migrated when its layout changes (`migrations/`). setup first commits a snapshot of `workflow/` (and of the red book, when it's about to be migrated) and stops if it can't, so local edits to `workflow/` stay in its history. A migration gets a commit of its own, then the update another: `git log` in `<root>/.gandalf` shows each step.
