@@ -24,6 +24,9 @@ next: <what happens next, one line>
 ## Plan
 <while working only; removed at wrap-up>
 
+## Hand-over
+<from intake step 8: the commit and PR text, then what's left for the human; removed once delivered>
+
 ## Log
 <- HH:MM step: what happened, a few words each>
 

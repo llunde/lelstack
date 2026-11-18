@@ -307,7 +307,7 @@ flowchart LR
 ### The graph
 Every note links up to one parent and only parents link down, so the graph is a tree rather than a hairball: `gandalf` in the middle, groups around it, projects around their group (or straight on `gandalf`), and each project's sessions, notes and rules around it. Nothing links sideways. Over time it becomes a map of all your work.
 
-setup seeds the vault's graph colours (Settings → Graph → Groups; an existing vault gets them on update if it has none):
+setup seeds the vault's graph colours (Settings → Graph → Groups). A vault from before schema 2 gets them once, in the update that migrates it, and only if it has none. Close Obsidian for that update, or it writes its own graph settings back over them:
 
 | Colour | Notes |
 |---|---|

@@ -198,13 +198,15 @@ if [ "$mode" = bootstrap ]; then
 
 Next:
 - Claude Code asks before editing files outside the repo you're in. To let gandalf write its red book without
-  prompts, add this to ~/.claude/settings.json (merge with what's there):
+  prompts, and to stop Claude Code adding its own attribution to commits and PRs (gandalf asks for none),
+  merge this into ~/.claude/settings.json:
+
     "permissions": {
       "additionalDirectories": ["$G"],
       "allow": ["Edit(/$G/red-book/**)", "Write(/$G/red-book/**)", "Bash($G/workflow/scripts/*)"]
     },
     "attribution": { "commit": "", "pr": "" }
-  The last line stops Claude Code adding its own attribution to commits and PRs (gandalf asks for none).
+
 - Open a repo below $ROOT and run /gandalf-onboard, then /gandalf-intake <task>.
 - Optional: open $G/red-book as an Obsidian vault; the graph comes colour-coded.
 EOF
