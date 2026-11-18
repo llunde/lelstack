@@ -11,7 +11,7 @@ last_retro:
 ---
 # <slug>
 
-Group: <[[groups/<group>/<group>]], or none> · Rules: [[projects/<slug>/rules]]
+Up: <[[groups/<group>/<group>]], or [[gandalf]] without a group> · Rules: [[projects/<slug>/rules]]
 
 ## Stack and layout
 <≤10 lines: languages, frameworks and versions, where things live, pinned tool versions>
@@ -38,4 +38,4 @@ Group: <[[groups/<group>/<group>]], or none> · Rules: [[projects/<slug>/rules]]
 <terse bullets: gotchas, things that differ from what you'd expect. ≤15; detail goes to notes/>
 
 ## Notes
-<[[projects/<slug>/notes/<topic>]] per note, one line each; or none>
+<[[projects/<slug>/notes/<topic>]] per note (from workflow/templates/note.md), one line each; or none>

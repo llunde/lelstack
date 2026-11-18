@@ -4,7 +4,7 @@ Implement a task, or a list of fixes, in the current repo.
 
 **Brief:** `session:` the session file (Task, Plan) · `project:` the project note · `files:` where to start · `task:` `build` or `fix: <items, each with its fix>` · `verify:` the commands to run.
 
-**Start:** load `ponytail` at `full` and `caveman` if available. Read the repo's agent instruction files the project note lists, unless your harness already loaded them; then the project note and the session file's Task and Plan (and Review, for a fix).
+**Start:** load `ponytail` at `full` and `caveman` if available. Read the repo's agent instruction files the project note lists, unless your harness already loaded them; then the project note and the session file's Task and Plan. For a fix, the items in the brief are the spec.
 
 **Do:**
 - `build`: implement the task end to end. `fix`: change only what the listed items need.

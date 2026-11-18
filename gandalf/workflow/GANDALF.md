@@ -8,11 +8,11 @@ The operating rules for every gandalf command. You are the lead on this task: yo
   - Core: `gandalf.md` (entry), `rules.md` (global rules), `lessons.md` (generic lessons), `proposals.md` (suggested changes to gandalf).
   - `groups/<group>/<group>.md` and `rules.md`: a client or group shared by several projects.
   - `projects/<slug>/<slug>.md` (the project note), `rules.md`, `notes/` (detail, read on demand), `sessions/` (one file per task).
-  - `dashboard.base`: the human's overview in Obsidian. Never read it.
+  - `dashboard.base`, `.obsidian/`: the human's overview and graph settings in Obsidian. Never read or edit them.
 - The repo you work in holds only the project. Nothing gandalf writes goes there (§5).
 
 ## 2. Start (every command)
-1. Run `workflow/scripts/context` (by its absolute path) from the current directory. It prints `key=value` lines: `root`, `gandalf`, `brain`, `version`, and inside a repo `repo`, `project`, `project_dir`, `onboarded`, `group`, `group_dir`, `branch`, plus the rules files that exist. An `error=` line: report it and stop.
+1. Run `workflow/scripts/context` (by its absolute path) from the current directory. It prints `key=value` lines: `root`, `gandalf`, `brain`, `version`, and inside a repo `repo`, `project`, `project_dir`, `onboarded`, `group`, `group_dir`, `branch`, plus the rules files that exist and the `SKILL.md` paths for `check` and `pr-text` (§7). An `error=` line: report it and stop.
 2. Read this file, then the rules that apply (§3): `red-book/rules.md`, the group's `rules.md`, the project's `rules.md`.
 3. Commands that work on a project: read the project note, the group note if any, and `red-book/lessons.md`. Nothing else from the red book unless a step needs it.
 4. Identify your harness (§11) and keep its session id at hand.
@@ -66,7 +66,7 @@ Tiers `fast` / `standard` / `strong` and effort `low` / `medium` / `high` map to
 Without sub-agents (§11), do each role's work yourself in sequence, following its file.
 
 ## 7. Skills
-**Lookup** for a skill named here: the harness's skill mechanism if the skill can be called there; else its `SKILL.md` at `~/.agents/skills/<name>/`, `~/.claude/skills/<name>/`, `~/.codex/skills/<name>/`; else the pinned copy in `workflow/skills/<name>/`. A skill marked `disable-model-invocation: true` can't be called by an agent: read its `SKILL.md` and follow it. Missing everywhere: use the fallback below and say so once in the session log.
+**Lookup** for a skill named here: the harness's skill mechanism if the skill can be called there; else its `SKILL.md` at `~/.agents/skills/<name>/`, `~/.claude/skills/<name>/`, `~/.codex/skills/<name>/`; else the pinned copy in `workflow/skills/<name>/`. For `check` and `pr-text`, `context` has done this lookup: `skill_check=` and `skill_pr_text=` are the `SKILL.md` to read and follow when the harness can't call the skill. A skill marked `disable-model-invocation: true` can't be called by an agent: read its `SKILL.md` and follow it. Missing everywhere: use the fallback below and say so once in the session log.
 
 | Skill | Used by | If missing |
 |---|---|---|
@@ -81,10 +81,14 @@ Skills never override rules or §3. Where a skill says "never commit" or "wait f
 
 ## 8. Writing
 - **Red book notes** are for future agents: terse, facts with evidence, no narrative, no filler. Frontmatter as in `workflow/templates/`. Links are wikilinks with vault-relative paths and no `.md`: `[[projects/<slug>/<slug>]]`. Core notes never link to a project or group.
+- **Links make a tree** (the human's Obsidian graph): every note links up to one parent, and only parents link down. Session → its project (the `project:` property, no body links). Note → its project (`Up:`). Project → its group, or `[[gandalf]]` without one (`Up:`), and down to its rules and notes. Group → `[[gandalf]]` and its rules. Nothing links sideways (session to session, note to note, project to project). One exception: a session may link the one project note it created or relied on most.
 - Write red book files with the harness's file tools (create, edit), not shell redirection or scripts: the human's permission rules for the red book apply to those tools.
 - Store what helps a future run: commands, conventions, gotchas, decisions that aren't obvious from the code. Not what the code or git history already says.
-- **Budgets:** project note ≤80 lines (move detail to `notes/<topic>.md` and link it), group note ≤40, `lessons.md` ≤30 bullets, plan ≤40 lines, session file ≤150 lines. Over budget: move or prune, don't compress into mush.
-- **Text for people** (commit messages, PR text, questions): short, plain, like a developer wrote it. No em-dashes, no "This PR…", no filler headings, no bold-label lists. The project's conventions decide language and format.
+- **Budgets:** project note ≤80 lines (move detail to `notes/<topic>.md` and link it), group note ≤40, `lessons.md` ≤30 bullets, plan ≤40 lines, a running session ≤150 lines (never by pruning its Log: a resume needs every line), a finished session ≤30 lines below its frontmatter with a Log of ≤12 lines (§10). Over budget: move or prune, don't compress into mush.
+- **Text for people** (commit messages, PR text, questions): short, plain, like a developer wrote it. No em-dashes, no "This PR…", no filler headings, no bold-label lists. The project's conventions decide language and format (Conventional Commits, issue keys, a PR template), and a rule can ask for more; otherwise:
+  - **Commit:** the subject line only. A body only when the why isn't clear from the subject and the diff, and then one or two lines.
+  - **PR description:** at most about six lines: what was wrong, what changed, anything a reviewer must know. Then, only if something couldn't be verified here, a short list of what to check. No per-file walkthrough, no list of checks that passed.
+  - **No attribution**, whatever the harness's own defaults say: no "Generated with …" line, no `Co-Authored-By` trailer, no mention of agents.
 - **Code:** match the surrounding code. Comments only for the why, one or two lines, never referencing tickets, PRs, sessions, reviews or agents.
 
 ## 9. Asking the human
@@ -96,6 +100,8 @@ Gandalf usually runs supervised: ask when the answer makes the result better, no
 
 ## 10. Sessions
 One file per task: `red-book/projects/<slug>/sessions/YYYY-MM-DD-<task-slug>.md` from `workflow/templates/session.md`. Set `step:` before you start a step, update `updated:` and `next:` as it ends, and append one Log line per step, so a session killed at any moment can be resumed from the file. Disk and git beat the log when they disagree.
+
+While a task runs, the file holds what a resume needs: the task verbatim, the plan, the commit and PR text once written. Whenever a session leaves `active` (`done` or `waiting` at intake's wrap-up, `abandoned` from resume or retro), compact it into the record a future agent skims, and the frontmatter carries most of it: `## Task` cut to what was asked in ≤3 lines (keep `Clarified:` answers that changed the result, one line each), `## Plan` removed (the diff and the PR hold it), `## Hand-over` removed once delivered or abandoned, the Log merged to ≤12 lines (one per step, dispatch and verify lines folded into it), `## Outcome` ≤3 lines, `## Retro`.
 
 **Instance history.** The instance folder is a local git repo with no remote that gives the red book a history. At the end of each command, commit it: `workflow/scripts/save "<command>(<slug>): <what>" <path>...`, with the files and folders this command changed (usually the project folder, plus any rules or group files you edited), so another session's unfinished edits stay out of your commit. It commits only the instance repo, never pushes, and retries if another session holds git's lock. This is the one scripted git write the human has allowed; if `save` itself is denied, leave the instance uncommitted. It's never a way around a denied command in a project: project repos only get the agent's own git commands, under the human's settings and instructions (§3).
 

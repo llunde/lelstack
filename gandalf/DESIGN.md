@@ -26,7 +26,7 @@ So neither a root instruction file nor root-level commands give a harness-neutra
     commands/ roles/ templates/ scripts/
     skills/check, skills/pr-text   pinned copies from lelstack/skills (fallback when not installed)
   red-book/                    INSTANCE-OWNED: never overwritten (the brain; an Obsidian vault)
-    gandalf.md rules.md lessons.md proposals.md dashboard.base
+    gandalf.md rules.md lessons.md proposals.md dashboard.base .obsidian/graph.json
     groups/<group>/<group>.md, rules.md
     projects/<slug>/<slug>.md, rules.md, notes/, sessions/
 ```
@@ -36,11 +36,11 @@ So neither a root instruction file nor root-level commands give a harness-neutra
 - Bootstrap and update are the same idempotent script (`setup <root>`). `/gandalf-update` runs it from the recorded source path.
 
 ## The brain: the red book
-Named after the Red Book of Westmarch. Plain markdown, wikilinks as vault-relative paths (`[[projects/a--b/a--b]]`) so links are unambiguous for agents and work in Obsidian, frontmatter for status.
+Named after the Red Book of Westmarch. Plain markdown, wikilinks as vault-relative paths (`[[projects/a--b/a--b]]`) so links are unambiguous for agents and work in Obsidian, frontmatter for status. Links form a tree (each note links up to one parent: session → project → group → `gandalf`) so the human's graph reads as a map, not a hairball; colour groups key off `type:` and `status:`. Up-links to `gandalf` don't break isolation: core never links down.
 - **Core** (`gandalf.md`, `rules.md`, `lessons.md`, `proposals.md`): what gandalf knows regardless of project. Never names a project, group or client, and never lists projects (a list of projects in core would leak every client's name into every session).
 - **Projects:** one folder per repo, keyed by the repo's path below the root (`client/web` → `client--web`). The entry note (≤80 lines) is the only project file loaded by default; `notes/` are read on demand.
 - **Groups** (optional client level): explicit `group:` in the project's frontmatter, suggested from the parent directory in nested layouts or the remote's org. A group has its own note and rules, shared by its projects. Gandalf never lists existing groups to a session (group names are client names); it asks for the name and joins a matching group.
-- **Sessions:** one file per task in the project's `sessions/` folder: task, branch, step, next, harness session id, plan, log, review triage, retro. No shared index file, so concurrent sessions never edit the same file. `scripts/sessions` lists a project's sessions from frontmatter; `dashboard.base` gives you a cross-project view in Obsidian, and agents never read it.
+- **Sessions:** one file per task in the project's `sessions/` folder. While it runs: frontmatter (status, step, size, branch, next, harness session id), the task verbatim, the plan, a one-line-per-step log. At wrap-up it's compacted to the record a future agent skims: frontmatter, the task in ≤3 lines, the log, a ≤3-line outcome, retro. The plan and review triage aren't kept: the diff, the PR and the report to the human carry them. No shared index file, so concurrent sessions never edit the same file. `scripts/sessions` lists a project's sessions from frontmatter; `dashboard.base` gives you a cross-project view in Obsidian, and agents never read it.
 - **Budgets:** project note ≤80 lines, lessons ≤30 bullets, plans ≤40 lines. Retro consolidates and prunes.
 - **Isolation by construction:** a session reads only core, its group and its project. The instance retro reads only `- gandalf:` lines, written project-free and then extracted by a script that also masks every project and group name, never other projects' files. `scripts/leakcheck` greps text for any project or group term before it goes into core, a group, or a proposal.
 
