@@ -13,8 +13,8 @@ Load the `caveman` skill (not for `brief check`: write its few lines tersely wit
 
 ## Do
 - `brief check`: look for blocking problems only: wrong approach, a requirement from its source missed, a task that can't work as written, a file, path, dependency or decision it needs but doesn't name. Ignore style, wording, and anything the diff review will catch. Read the plan's source sections and the code it names, nothing broader. Append `## Brief check` to the plan: `pass`, or numbered blocking problems, each with evidence and fix.
-- `review`: run workflow/skills/workflow-review/SKILL.md with the brief's inputs. Treat `outside owns:` files as part of the target. With `rows:`, the target is the fix diff: check every listed row and any new defect the fix brings in, set the rows you confirm to `fixed (<evidence>)`, and add rows for new defects.
-- `audit section`: run workflow-review with the brief's inputs, then add a "Read fully / not read" list to the section file.
+- `review`: run workflow/skills/elrond-review/SKILL.md with the brief's inputs. Treat `outside owns:` files as part of the target. With `rows:`, the target is the fix diff: check every listed row and any new defect the fix brings in, set the rows you confirm to `fixed (<evidence>)`, and add rows for new defects.
+- `audit section`: run elrond-review with the brief's inputs, then add a "Read fully / not read" list to the section file.
 - `audit cross-cutting`: do workflow/commands/audit.md step 3 and write `section-cross-cutting.md`.
 - `audit synthesis`: write the report from workflow/templates/audit.md as `synthesis.md` in the audit folder, as in audit.md step 4; the Orchestrator renames it. Only if you can't write the file, return it as text.
 

@@ -22,7 +22,7 @@ Plan: [NNN](../plans/NNN-slug.md)
 ## Review
 <level (full / light / skip) and reviewer tier>
 
-<the merged table written by the workflow-review skill>
+<the merged table written by the elrond-review skill>
 
 | # | Severity | Lens | Location | Finding and concrete case | Fix | Status |
 |---|---|---|---|---|---|---|

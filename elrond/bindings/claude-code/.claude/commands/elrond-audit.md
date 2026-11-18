@@ -1,5 +1,5 @@
 ---
-description: Read-only audit: phase, final or ad hoc
+description: "Elrond: read-only audit: phase, final or ad hoc"
 model: opus
 ---
 Follow `workflow/commands/audit.md` exactly. Arguments: $ARGUMENTS

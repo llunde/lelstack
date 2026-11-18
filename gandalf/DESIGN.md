@@ -62,7 +62,7 @@ Named after the Red Book of Westmarch. Plain markdown, wikilinks as vault-relati
 | `/gandalf-retro [instance]` | deep retro for this project, or the instance core |
 | `/gandalf-update` | apply the current `lelstack/gandalf` to this instance |
 
-Prefixed `gandalf-` because the stubs are user-level and must not collide with elrond's project-level `/intake`.
+Prefixed `gandalf-` because the stubs are user-level and must not collide with other skills or with elrond, which uses the same `<workflow>-<command>` names (`/elrond-intake`).
 
 ## Orchestration
 Reused from elrond, slimmed down: the main session is the orchestrator; it delegates to three roles (`scout` read-only, `builder`, `reviewer`) and picks tier and effort per dispatch from a table with an escalation ladder. The starting points sit a notch above elrond's: elrond runs continuously and has to conserve tokens, while gandalf runs now and then with a human waiting, so a wrong fact or a missed finding costs more than the tokens. The ladder is elrond's without its bottom fast / low rung. Sequential only, no worktrees, no planner role (the orchestrator writes the plan into the session file). It does small work itself when it already holds the context, because a sub-agent would re-read everything.
