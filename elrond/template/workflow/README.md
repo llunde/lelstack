@@ -34,6 +34,6 @@ scripts/                  setup, check, check-full, run: quiet wrappers around t
 scripts/git-setup         sets up the workflow repo (.git/workflow) and both ignore lists (WORKFLOW.md §2 Git)
 scripts/save, drift       the two-repo save (AGENTS.md §6 Commits) and the drift check (recover.md step 5)
 .logs/                    script logs and tier-2 evidence; local-only, tracked by neither repo
-skills/workflow-review/   SKILL.md: the combined review used by every review step
+skills/elrond-review/   SKILL.md: the combined review used by every review step
 skills/<name>/            domain skills copied from the skill library at bootstrap or intake, if any
 ```

@@ -1,9 +1,9 @@
 ---
-name: workflow-review
-description: Combined code review used by this repo's workflow. Runs the harness's built-in correctness review and ponytail-review on the same target, checks the change against its plan, and merges everything into one findings table. Use for plan and unit reviews, phase or final audit sections, change, or "review <target>".
+name: elrond-review
+description: "Elrond: combined code review used by this repo's workflow. Runs the harness's built-in correctness review and ponytail-review on the same target, checks the change against its plan, and merges everything into one findings table. Use for plan and unit reviews, phase or final audit sections, change, or \"review <target>\"."
 ---
 
-# workflow-review
+# elrond-review
 
 Read-only: lists findings, changes no code. Never pass a fix flag to a review tool.
 

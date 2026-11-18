@@ -25,10 +25,10 @@ Install the required skills at user level, for every harness that will run the l
 |---|---|---|
 | `caveman` skill ([source](https://github.com/JuliusBrussee/caveman)) | every role but the Helper (AGENTS.md §6 Voice) | **required**: stop |
 | `ponytail` skill ([source](https://github.com/DietrichGebert/ponytail)) | Planner, Executor, Resolver (AGENTS.md §6 Simplicity) | **required**: stop |
-| `ponytail-review` skill ([source](https://github.com/DietrichGebert/ponytail), same repo) | `workflow-review`, quality and lean lens | **required**: stop |
-| `workflow-review` skill | every review and audit | none: bootstrap copies it into the repo (`workflow/skills/workflow-review/`) |
+| `ponytail-review` skill ([source](https://github.com/DietrichGebert/ponytail), same repo) | `elrond-review`, quality and lean lens | **required**: stop |
+| `elrond-review` skill | every review and audit | none: bootstrap copies it into the repo (`workflow/skills/elrond-review/`) |
 | domain skills from the skill library | the plans that name them (harness.md) | optional: none selected, the loop runs as normal |
-| the harness's built-in code review (e.g. Claude Code `/code-review`) | `workflow-review`, correctness lens | optional: the fallback bug hunt in `workflow-review` |
+| the harness's built-in code review (e.g. Claude Code `/code-review`) | `elrond-review`, correctness lens | optional: the fallback bug hunt in `elrond-review` |
 | git, and a harness with sub-agents | the loop; parallel work | git required; without sub-agents, single-agent mode (§6) |
 
 **Loading a skill** means using the harness's skill mechanism. A harness without one reads the skill's `SKILL.md` at the path recorded in `workflow/harness.md` and follows it. Skills under `workflow/skills/` are always loaded by reading their `SKILL.md`, since harnesses don't discover them there.
@@ -141,7 +141,7 @@ The bootstrap agent loads the `caveman` skill once the preflight passes (AGENTS.
 | `workflow/templates/plan.md` · `progress.md` · `question.md` · `audit.md` · `phase.md` | templates for plan briefs, progress and slice notes, questions, audit reports, phase docs | — |
 | `workflow/docs/out-of-scope.md` | fenced-off ideas and the "Pulled into scope" record | bootstrap Stage B, `intake`, `resolve` |
 | `workflow/roles/` | one file per dispatched role (planner, executor, reviewer, resolver, helper): brief inputs, what to load, what it may write, never, done, return | — |
-| `workflow/skills/workflow-review/SKILL.md` | the combined review used by every review and audit | — |
+| `workflow/skills/elrond-review/SKILL.md` | the combined review used by every review and audit | — |
 | `workflow/retro.md` | evidence-backed observations and proposals | audits; `resolve` updates proposal status |
 
 ## 5. Commands
@@ -165,12 +165,12 @@ Bindings are the only workflow files besides `AGENTS.md` that live outside `work
 
 **Claude Code**
 - `CLAUDE.md` contains one line: `@AGENTS.md`.
-- Ready-made files are in `bindings/claude-code/` next to SPEC.md: `CLAUDE.md`, and `.claude/` (`commands/`, `skills/workflow-review/SKILL.md`, `settings.json`). Bootstrap and `harness` copy them into the repo root when that folder is readable; otherwise they write the files from this section. What they contain:
-- `.claude/skills/workflow-review/SKILL.md`: the same `name` and `description` as `workflow/skills/workflow-review/SKILL.md`, with the body `Follow workflow/skills/workflow-review/SKILL.md exactly. Arguments: $ARGUMENTS`.
-- `.claude/commands/<name>.md` for each of build, audit, resolve, intake, change and harness:
+- Ready-made files are in `bindings/claude-code/` next to SPEC.md: `CLAUDE.md`, and `.claude/` (`commands/`, `skills/elrond-review/SKILL.md`, `settings.json`). Bootstrap and `harness` copy them into the repo root when that folder is readable; otherwise they write the files from this section. What they contain:
+- `.claude/skills/elrond-review/SKILL.md`: the same `name` and `description` as `workflow/skills/elrond-review/SKILL.md`, with the body `Follow workflow/skills/elrond-review/SKILL.md exactly. Arguments: $ARGUMENTS`.
+- `.claude/commands/elrond-<name>.md` for each of build, audit, resolve, intake, change and harness:
   ```
   ---
-  description: <one line>
+  description: "Elrond: <one line>"
   model: opus
   ---
   Follow `workflow/commands/<name>.md` exactly. Arguments: $ARGUMENTS
@@ -208,7 +208,7 @@ Claude Code: `.claude/settings.json` (tracked in the workflow repo; the copy is 
 Deny rules win over allow rules, so a force push stays blocked. Editing the permission file itself always asks, so an agent can't loosen its own baseline; `harness` runs with you present. Add the worktree location to `permissions.additionalDirectories` if it's outside the repo, and `Bash(<main checkout>/workflow/scripts/*)` so worktree units can run the scripts by absolute path. Rule syntax changes between versions: check it against the Claude Code permissions docs, and confirm with one allowed and one denied command.
 
 **Harnesses that read `AGENTS.md` natively, or any other harness**
-- Invoke a command with the prompt "Follow workflow/commands/<name>.md.", or the harness's own custom-command mechanism if it has one (record which in its section). Codex reads AGENTS.md natively. If the harness has sub-agents, map the tiers to them. Otherwise use single-agent mode. Without native worktree isolation, the Orchestrator creates worktrees itself (harness.md); check that the harness lets sub-agents work in that location without permission prompts.
+- Invoke a command with the prompt "Follow workflow/commands/<name>.md.", or the harness's own custom-command mechanism if it has one, named `elrond-<name>` (record which in its section). Codex reads AGENTS.md natively. If the harness has sub-agents, map the tiers to them. Otherwise use single-agent mode. Without native worktree isolation, the Orchestrator creates worktrees itself (harness.md); check that the harness lets sub-agents work in that location without permission prompts.
 
 **Single-agent mode** (no sub-agents, small context windows, local models)
 - The rules the agent follows are in `workflow/commands/build.md` §6: one plan per session, always `sequential`, no brief check, real IDs written directly, the review as a separate pass.

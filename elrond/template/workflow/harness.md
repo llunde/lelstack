@@ -21,13 +21,13 @@ Added YYYY-MM-DD by <bootstrap | harness>.
 | Setting | Value |
 |---|---|
 | Rulebook loading | <e.g. CLAUDE.md imports AGENTS.md; native AGENTS.md> |
-| Command invocation | <e.g. `/build`; or the prompt "Follow workflow/commands/build.md"> |
+| Command invocation | <e.g. `/elrond-build`; or the prompt "Follow workflow/commands/build.md"> |
 | Sub-agents | <yes (nesting: n levels) · no → single-agent mode> |
 | Tiers strong / standard / fast | <e.g. Claude Code: opus / sonnet / haiku · Codex: sol / terra / luna> |
 | Effort per dispatch | <yes: workflow `low` / `medium` / `high` → this harness's levels … · no: harness default> |
 | Worktrees | <harness-native (e.g. Claude Code Agent tool isolation) · Orchestrator-created: `git worktree add <location>/<unit> -b wt/<unit> <integration branch>`> |
 | Worktree location | <e.g. `.claude/worktrees/` or `../<repo>.worktrees/`; sub-agents must be able to edit there without permission prompts. If inside the repo: local-only in `workflow/scripts/git-setup` and excluded from test discovery, lint, search and file watchers> |
-| Review: correctness lens | <built-in review an agent can start read-only on a range or paths, e.g. Claude Code `/code-review <effort> <target>` (never `--fix`) · or `fallback` (workflow-review SKILL.md, Fallback bug hunt)> |
+| Review: correctness lens | <built-in review an agent can start read-only on a range or paths, e.g. Claude Code `/code-review <effort> <target>` (never `--fix`) · or `fallback` (elrond-review SKILL.md, Fallback bug hunt)> |
 | Context reset | <how the Orchestrator compacts or clears its own context · none> |
 | Permissions | <baseline applied (WORKFLOW.md §6): where, e.g. `.claude/settings.json`; confirmed with one allowed and one denied command> |
 
@@ -36,7 +36,7 @@ Added YYYY-MM-DD by <bootstrap | harness>.
 | caveman | present | <path> | <commit, version or file date> |
 | ponytail | present | <path> | <...> |
 | ponytail-review | present | <path> | <...> |
-| workflow-review | in repo | workflow/skills/workflow-review/SKILL.md | |
+| elrond-review | in repo | workflow/skills/elrond-review/SKILL.md | |
 | <domain skill, if any> | in repo | workflow/skills/<name>/SKILL.md | |
 
 ## <Next harness, same rows>

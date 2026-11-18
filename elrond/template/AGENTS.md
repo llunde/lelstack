@@ -109,7 +109,7 @@ A failing `check` is an **environment problem until proven otherwise**: check st
 - [ ] docs current: README, stack.md and decisions updated if behavior, commands or settled facts changed
 - [ ] durable state: tasks ticked, progress note written (slice notes folded in), proposed entries turned into real IDs, index rows updated, saved (§6 Commits), worktrees and unit branches removed, integration branch pushed
 
-**Plan review level** (`review:`): chosen by the Planner (workflow/roles/planner.md); the Orchestrator may raise it, never lower it. Every review runs the `workflow-review` skill. Reviewers only report; the Orchestrator triages, and Executors fix.
+**Plan review level** (`review:`): chosen by the Planner (workflow/roles/planner.md); the Orchestrator may raise it, never lower it. Every review runs the `elrond-review` skill. Reviewers only report; the Orchestrator triages, and Executors fix.
 
 ## 9. Tests
 Coverage is deliberately traded for speed and signal. **Default: no new test.** Most plans add zero or one. A plan proves its acceptance criteria at the verification tier that fits (§7); often that's tier 2, which leaves no test behind.

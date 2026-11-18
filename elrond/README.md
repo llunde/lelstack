@@ -17,7 +17,7 @@ flowchart TD
     end
     subgraph BUILD["2 · Build, phase by phase"]
         direction LR
-        F("/build<br/><small>plan · execute · verify · review</small>") --> G("Phase audit<br/>+ retro")
+        F("/elrond-build<br/><small>plan · execute · verify · review</small>") --> G("Phase audit<br/>+ retro")
         G -->|"fix plans,<br/>next phase"| F
         G -->|last phase| J("Final audit")
         J -->|findings| K("Fix plans")
@@ -25,7 +25,7 @@ flowchart TD
     end
     subgraph MAINT["3 · Maintain"]
         direction LR
-        L(["Done"]) --> M("You run /intake or /change<br/><small>new work goes back to /build</small>")
+        L(["Done"]) --> M("You run /elrond-intake or /elrond-change<br/><small>new work goes back to /elrond-build</small>")
     end
     SETUP --> BUILD --> MAINT
 
@@ -93,7 +93,7 @@ Paste a thorough description of what you want built. The agent then:
 
 ### 4. Build
 
-Run **`/build`** in Claude Code. In other harnesses, say "Follow workflow/commands/build.md". Run it again whenever a session ends: after a usage limit, a crash, or when you come back the next day. It always resumes from where things stopped.
+Run **`/elrond-build`** in Claude Code. In other harnesses, say "Follow workflow/commands/build.md". Run it again whenever a session ends: after a usage limit, a crash, or when you come back the next day. It always resumes from where things stopped.
 
 That's it. The rest of this README explains what happens and how to steer it.
 
@@ -263,7 +263,7 @@ workflow/
   harness.md         agent and model setup per harness
   commands/ …        the procedures the agents follow
   roles/ …           what each dispatched agent does: planner, executor, reviewer, resolver, helper
-  skills/            workflow-review, plus any technology skills picked for your stack
+  skills/            elrond-review, plus any technology skills picked for your stack
   scripts/           setup, check, check-full, run: quiet wrappers around your project's own commands;
                      git-setup, save, drift: the two-repo git plumbing
 ```
@@ -276,16 +276,16 @@ workflow/
 
 | Command | When to use it |
 |---|---|
-| `/build` | Run the loop. Run it again after every stop. |
-| `/resolve` | Answer the questions the agents logged. It goes through them one at a time, each with a recommendation. |
-| `/intake` | Add new features or a batch of changes after the first build: becomes a new phase. |
-| `/change` | A quick fix or tweak, done together with you in one session. |
-| `/audit` | An extra audit whenever you want one (phase, final or ad hoc). |
-| `/harness` | Add another agent harness, or switch to one, e.g. move from Claude Code to Codex. Run it from the new harness. |
+| `/elrond-build` | Run the loop. Run it again after every stop. |
+| `/elrond-resolve` | Answer the questions the agents logged. It goes through them one at a time, each with a recommendation. |
+| `/elrond-intake` | Add new features or a batch of changes after the first build: becomes a new phase. |
+| `/elrond-change` | A quick fix or tweak, done together with you in one session. |
+| `/elrond-audit` | An extra audit whenever you want one (phase, final or ad hoc). |
+| `/elrond-harness` | Add another agent harness, or switch to one, e.g. move from Claude Code to Codex. Run it from the new harness. |
 
 Outside Claude Code, say "Follow workflow/commands/<name>.md" instead.
 
-**Don't commit to the repo outside these commands.** If you do, the next `/build` notices (no workflow commit names yours), adopts your changes and reviews them, but it's smoother to use `/change`.
+**Don't commit to the repo outside these commands.** If you do, the next `/elrond-build` notices (no workflow commit names yours), adopts your changes and reviews them, but it's smoother to use `/elrond-change`.
 
 ### Your touchpoints
 
@@ -294,12 +294,12 @@ The workflow is designed so you only need to show up for a few things:
 | When | What you do | Where |
 |---|---|---|
 | Once, at the start | Answer the interview, sign off on the summary | the bootstrap session |
-| Whenever you like | Answer logged questions | `/resolve` (open questions are in `workflow/questions/index.md`) |
+| Whenever you like | Answer logged questions | `/elrond-resolve` (open questions are in `workflow/questions/index.md`) |
 | Whenever you like | Run the human-only checks, e.g. "does it look right on a real device", and record pass/fail | `workflow/acceptance.md` |
-| At phase ends | Approve or decline improvement proposals from the retro (they appear as questions) | `/resolve` |
-| When you want more | New features or fixes | `/intake` or `/change` |
+| At phase ends | Approve or decline improvement proposals from the retro (they appear as questions) | `/elrond-resolve` |
+| When you want more | New features or fixes | `/elrond-intake` or `/elrond-change` |
 
-A failed acceptance check becomes a fix plan automatically on the next `/build`. Checks marked *blocking* hold the next phase until they pass.
+A failed acceptance check becomes a fix plan automatically on the next `/elrond-build`. Checks marked *blocking* hold the next phase until they pass.
 
 ```mermaid
 %%{init: {"fontFamily": "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif", "theme": "base", "themeVariables": {"fontFamily": "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#CBD5E1", "primaryTextColor": "#0F172A", "lineColor": "#94A3B8", "clusterBkg": "#F8FAFC", "clusterBorder": "#E2E8F0", "edgeLabelBackground": "#FFFFFF", "tertiaryColor": "#F8FAFC"}, "flowchart": {"curve": "basis", "padding": 14}}}%%
@@ -310,11 +310,11 @@ flowchart LR
         RP("Retro proposals")
         AC("Human-only checks<br/><small>acceptance.md</small>")
     end
-    Q & RP --> RES("You run /resolve")
+    Q & RP --> RES("You run /elrond-resolve")
     AC --> YOU("You run them<br/><small>record pass / fail</small>")
     RES --> BACK("Plans reconciled<br/><small>if you changed a default</small>")
     YOU --> FIX("A failed check<br/>becomes a fix plan")
-    NEW("You have new ideas") --> INT("/intake or /change")
+    NEW("You have new ideas") --> INT("/elrond-intake or /elrond-change")
 
     classDef default fill:#FFFFFF,stroke:#CBD5E1,stroke-width:1px,color:#0F172A
     classDef you fill:#FFF7ED,stroke:#F97316,stroke-width:1.5px,color:#7C2D12
@@ -332,26 +332,26 @@ flowchart LR
 
 ### When it stops, and what to do
 
-`/build` keeps going until one of these happens. It tells you which one.
+`/elrond-build` keeps going until one of these happens. It tells you which one.
 
 | Stop | What to do |
 |---|---|
-| **Final audit done** | Done. A summary is in `workflow/progress/complete.md`. Use `/intake` or `/change` for more. |
-| **Nothing actionable** | Everything left waits on you: run `/resolve`, or do the blocking acceptance checks. |
-| **Usage or context running low** | Wait for your limits to reset, then `/build` again. |
-| **Missing requirement** | Install the skill it names, then `/build`. |
-| **Integration unavailable** | A tool integration the phase needs (e.g. an MCP server) isn't reachable. Follow the recovery steps it reports, then `/build`. |
-| **Environment broken** | The toolchain or dependencies are missing or broken on this machine. Fix what it names, then `/build`. |
-| **Unknown harness** | You opened the project in a harness that isn't set up yet. Run `/harness` from it. |
-| **Plan closed** | Only in single-agent mode (a harness without sub-agents): `/build` again for the next plan or audit step. |
+| **Final audit done** | Done. A summary is in `workflow/progress/complete.md`. Use `/elrond-intake` or `/elrond-change` for more. |
+| **Nothing actionable** | Everything left waits on you: run `/elrond-resolve`, or do the blocking acceptance checks. |
+| **Usage or context running low** | Wait for your limits to reset, then `/elrond-build` again. |
+| **Missing requirement** | Install the skill it names, then `/elrond-build`. |
+| **Integration unavailable** | A tool integration the phase needs (e.g. an MCP server) isn't reachable. Follow the recovery steps it reports, then `/elrond-build`. |
+| **Environment broken** | The toolchain or dependencies are missing or broken on this machine. Fix what it names, then `/elrond-build`. |
+| **Unknown harness** | You opened the project in a harness that isn't set up yet. Run `/elrond-harness` from it. |
+| **Plan closed** | Only in single-agent mode (a harness without sub-agents): `/elrond-build` again for the next plan or audit step. |
 | **Session budget reached** | Only with automatic resume on: the loop starts a fresh session by itself. |
 
-If a session dies without a clean stop (crash, cutoff), just run `/build`. It resumes interrupted plans, reviews and merges from disk:
+If a session dies without a clean stop (crash, cutoff), just run `/elrond-build`. It resumes interrupted plans, reviews and merges from disk:
 
 ```mermaid
 %%{init: {"fontFamily": "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif", "theme": "base", "themeVariables": {"fontFamily": "-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif", "fontSize": "14px", "primaryColor": "#FFFFFF", "primaryBorderColor": "#CBD5E1", "primaryTextColor": "#0F172A", "lineColor": "#94A3B8", "clusterBkg": "#F8FAFC", "clusterBorder": "#E2E8F0", "edgeLabelBackground": "#FFFFFF", "tertiaryColor": "#F8FAFC"}, "flowchart": {"curve": "basis", "padding": 14}}}%%
 flowchart TD
-    ST(["/build starts<br/><small>or context compacted</small>"]) --> H{{"Harness, skills,<br/>integrations OK?"}}
+    ST(["/elrond-build starts<br/><small>or context compacted</small>"]) --> H{{"Harness, skills,<br/>integrations OK?"}}
     H -->|no| STOP(["Stop and say<br/>what's missing"])
     H -->|yes| R1("Git layout · setup script<br/><small>finish a half-done squash merge</small>")
     R1 -.->|environment broken| STOP
@@ -413,7 +413,7 @@ gitGraph
 - Every dispatch starts at the cheapest model and effort that fits ([`build.md` §1](template/workflow/commands/build.md#1-dispatch-rules) has the starting points). Going higher needs a stated reason, which lands in the progress note, and each audit's retro counts the model mix so you can tune the starting points.
 - Scripts are quiet: a passing `check` prints one line, not a full test log.
 - The Orchestrator keeps its own context small, resets it after each phase audit or every few closed plans (6 by default, set in `workflow/harness.md`), and after a context compaction re-reads the state from disk instead of trusting its memory.
-- **Automatic resume** (off by default): a shell loop or scheduled task can restart `/build` after each usage reset. Turn it on in `workflow/harness.md` once a few supervised runs look right. It spends quota while you're away.
+- **Automatic resume** (off by default): a shell loop or scheduled task can restart `/elrond-build` after each usage reset. Turn it on in `workflow/harness.md` once a few supervised runs look right. It spends quota while you're away.
 
 ### Safety
 
@@ -435,7 +435,7 @@ flowchart LR
     TREE --> SAVE("workflow/scripts/save<br/><small>1 · app commit, plain message<br/>2 · workflow commit that names it</small>")
     SAVE -->|1| APP[(".git<br/><small>app repo · your remote</small>")]
     SAVE -->|2| WR[(".git/workflow<br/><small>workflow repo · remote optional</small>")]
-    APP & WR --> DR("drift script<br/><small>app commits no trailer names<br/>→ adopted by /build</small>")
+    APP & WR --> DR("drift script<br/><small>app commits no trailer names<br/>→ adopted by /elrond-build</small>")
 
     classDef default fill:#FFFFFF,stroke:#CBD5E1,stroke-width:1px,color:#0F172A
     classDef you fill:#FFF7ED,stroke:#F97316,stroke-width:1.5px,color:#7C2D12
@@ -452,7 +452,7 @@ flowchart LR
     style TREE fill:#F8FAFC,stroke:#E2E8F0,color:#475569
 ```
 
-- **Link between the two:** each workflow commit carries an `App-Commit: <sha>` line for the app commit it made. An app commit nobody recorded is treated as a change made outside the loop: the next `/build` adopts and reviews it.
+- **Link between the two:** each workflow commit carries an `App-Commit: <sha>` line for the app commit it made. An app commit nobody recorded is treated as a change made outside the loop: the next `/elrond-build` adopts and reviews it.
 - **Workflow history:** run git on it with `git --git-dir=.git/workflow <command>` from the project root, e.g. `log`, `status`, `diff`.
 - **One computer** is the default: the workflow repo has no remote, and its history lives in `.git/workflow`. Back up the folder if you care about the workflow history; your app still pushes to its own remote.
 - **Continue on another computer:** add a remote for the workflow repo once (`git --git-dir=.git/workflow remote add origin <url>`, then `git --git-dir=.git/workflow push -u origin main`, and add it to `workflow/stack.md` under Git so the loop pushes it). On the other computer, clone your app and run the three lines in [SPEC.md §2](SPEC.md#2-repository-layout) (Git, Another computer) from its root.
@@ -460,7 +460,7 @@ flowchart LR
 
 ### Switching harness
 
-Open the project in the new harness, for example Codex, and run "Follow workflow/commands/harness.md". It checks the skills there, asks which models map to strong / standard / fast, probes what the harness can do, writes its bindings and permissions, and saves them to the workflow repo. From then on, `/build` (or its equivalent) works there too, and work in progress from the other harness is picked up normally.
+Open the project in the new harness, for example Codex, and run "Follow workflow/commands/harness.md". It checks the skills there, asks which models map to strong / standard / fast, probes what the harness can do, writes its bindings and permissions, and saves them to the workflow repo. From then on, `/elrond-build` (or its equivalent) works there too, and work in progress from the other harness is picked up normally.
 
 ### Improving the workflow
 
